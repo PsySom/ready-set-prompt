@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from 'sonner';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileInfo } from '@/components/profile/ProfileInfo';
@@ -19,7 +20,8 @@ import { useTranslation } from 'react-i18next';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const themeContext = useTheme();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -40,6 +42,17 @@ const Profile = () => {
 
       if (error) throw error;
       setProfile(data);
+
+      // Apply language and theme settings immediately
+      if (data.language && data.language !== i18n.language) {
+        i18n.changeLanguage(data.language);
+      }
+      const theme = data.theme as 'light' | 'dark' | 'auto' | null;
+      if (theme) themeContext.setTheme(theme);
+      if (data.color_scheme) themeContext.setColorScheme(data.color_scheme);
+      if (data.font_size) themeContext.setFontSize(data.font_size);
+      if (data.high_contrast !== undefined) themeContext.setHighContrast(data.high_contrast);
+      if (data.reduce_motion !== undefined) themeContext.setReduceMotion(data.reduce_motion);
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast.error('Failed to load profile');

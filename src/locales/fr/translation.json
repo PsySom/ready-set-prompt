@@ -321,6 +321,10 @@
     "pageNotFoundDescription": "La page que vous recherchez n'existe pas ou a été déplacée.",
     "backToDashboard": "Retour au tableau de bord",
     "noDataYet": "Pas encore de données",
-    "getStarted": "Commencer"
+    "getStarted": "Commencer",
+    "time": "fois",
+    "times": "fois",
+    "minutes": "minutes",
+    "hour": "heure"
   }
 }

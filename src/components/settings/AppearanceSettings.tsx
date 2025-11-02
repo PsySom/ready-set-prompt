@@ -2,7 +2,9 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Palette } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 interface AppearanceSettingsProps {
   profile: any;
@@ -13,10 +15,13 @@ export const AppearanceSettings = ({
   profile,
   onUpdate,
 }: AppearanceSettingsProps) => {
+  const themeContext = useTheme();
+  const { t } = useTranslation();
+
   const themes = [
-    { value: 'light', label: 'Light' },
-    { value: 'dark', label: 'Dark' },
-    { value: 'auto', label: 'Auto (System)' },
+    { value: 'light', label: t('settings.appearance.light') },
+    { value: 'dark', label: t('settings.appearance.dark') },
+    { value: 'auto', label: t('settings.appearance.auto') },
   ];
 
   const colorSchemes = [
@@ -27,19 +32,58 @@ export const AppearanceSettings = ({
   ];
 
   const fontSizes = [
-    { value: 'small', label: 'Small' },
-    { value: 'medium', label: 'Medium' },
-    { value: 'large', label: 'Large' },
-    { value: 'extra-large', label: 'Extra Large' },
+    { value: 'small', label: t('settings.appearance.small') },
+    { value: 'medium', label: t('settings.appearance.medium') },
+    { value: 'large', label: t('settings.appearance.large') },
+    { value: 'extra-large', label: t('settings.appearance.extraLarge') },
   ];
+
+  // Sync profile with theme context on mount
+  useEffect(() => {
+    if (profile) {
+      const theme = profile.theme as 'light' | 'dark' | 'auto' | null;
+      if (theme) themeContext.setTheme(theme);
+      if (profile.color_scheme) themeContext.setColorScheme(profile.color_scheme);
+      if (profile.font_size) themeContext.setFontSize(profile.font_size);
+      if (profile.high_contrast !== undefined) themeContext.setHighContrast(profile.high_contrast);
+      if (profile.reduce_motion !== undefined) themeContext.setReduceMotion(profile.reduce_motion);
+    }
+  }, []);
+
+  const handleThemeChange = (value: string) => {
+    themeContext.setTheme(value as 'light' | 'dark' | 'auto');
+    onUpdate({ theme: value });
+  };
+
+  const handleColorSchemeChange = (value: string) => {
+    themeContext.setColorScheme(value);
+    onUpdate({ color_scheme: value });
+  };
+
+  const handleFontSizeChange = (value: string) => {
+    themeContext.setFontSize(value);
+    onUpdate({ font_size: value });
+  };
+
+  const handleHighContrastChange = (checked: boolean) => {
+    themeContext.setHighContrast(checked);
+    onUpdate({ high_contrast: checked });
+  };
+
+  const handleReduceMotionChange = (checked: boolean) => {
+    themeContext.setReduceMotion(checked);
+    onUpdate({ reduce_motion: checked });
+  };
 
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Theme</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          {t('settings.appearance.theme')}
+        </h3>
         <RadioGroup
-          value={profile.theme}
-          onValueChange={(value) => onUpdate({ theme: value })}
+          value={themeContext.theme}
+          onValueChange={handleThemeChange}
         >
           {themes.map((theme) => (
             <div key={theme.value} className="flex items-center space-x-2">
@@ -52,15 +96,15 @@ export const AppearanceSettings = ({
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Color Scheme
+          {t('settings.appearance.colorScheme')}
         </h3>
         <div className="grid grid-cols-2 gap-3">
           {colorSchemes.map((scheme) => (
             <button
               key={scheme.value}
-              onClick={() => onUpdate({ color_scheme: scheme.value })}
+              onClick={() => handleColorSchemeChange(scheme.value)}
               className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
-                profile.color_scheme === scheme.value
+                themeContext.colorScheme === scheme.value
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50'
               }`}
@@ -73,10 +117,12 @@ export const AppearanceSettings = ({
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Font Size</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          {t('settings.appearance.fontSize')}
+        </h3>
         <RadioGroup
-          value={profile.font_size}
-          onValueChange={(value) => onUpdate({ font_size: value })}
+          value={themeContext.fontSize}
+          onValueChange={handleFontSizeChange}
         >
           {fontSizes.map((size) => (
             <div key={size.value} className="flex items-center space-x-2">
@@ -89,36 +135,32 @@ export const AppearanceSettings = ({
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Accessibility
+          {t('settings.appearance.accessibility')}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>High contrast mode</Label>
+              <Label>{t('settings.appearance.highContrast')}</Label>
               <p className="text-sm text-muted-foreground">
                 Increase contrast for better visibility
               </p>
             </div>
             <Switch
-              checked={profile.high_contrast}
-              onCheckedChange={(checked) =>
-                onUpdate({ high_contrast: checked })
-              }
+              checked={themeContext.highContrast}
+              onCheckedChange={handleHighContrastChange}
             />
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Reduce motion</Label>
+              <Label>{t('settings.appearance.reduceMotion')}</Label>
               <p className="text-sm text-muted-foreground">
                 Minimize animations and transitions
               </p>
             </div>
             <Switch
-              checked={profile.reduce_motion}
-              onCheckedChange={(checked) =>
-                onUpdate({ reduce_motion: checked })
-              }
+              checked={themeContext.reduceMotion}
+              onCheckedChange={handleReduceMotionChange}
             />
           </div>
         </div>

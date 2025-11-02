@@ -1,7 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from 'react-i18next';
 
 interface NotificationSettingsProps {
   profile: any;
@@ -19,14 +19,16 @@ export const NotificationSettings = ({
   profile,
   onUpdate,
 }: NotificationSettingsProps) => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Push Notifications
+          {t('settings.notifications.title')}
         </h3>
         <div className="flex items-center justify-between">
-          <Label htmlFor="notifications">Enable notifications</Label>
+          <Label htmlFor="notifications">{t('settings.notifications.enable')}</Label>
           <Switch
             id="notifications"
             checked={profile.notifications_enabled}
@@ -39,11 +41,11 @@ export const NotificationSettings = ({
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Tracker Reminders
+          {t('settings.notifications.trackerReminders')}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Tracker reminders</Label>
+            <Label>{t('settings.notifications.trackerReminders')}</Label>
             <Switch
               checked={profile.tracker_frequency > 0}
               onCheckedChange={(checked) =>
@@ -55,7 +57,7 @@ export const NotificationSettings = ({
           {profile.tracker_frequency > 0 && (
             <>
               <div>
-                <Label>Frequency per day</Label>
+                <Label>{t('settings.notifications.frequency')}</Label>
                 <Select
                   value={profile.tracker_frequency?.toString()}
                   onValueChange={(value) =>
@@ -66,16 +68,16 @@ export const NotificationSettings = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1 time</SelectItem>
-                    <SelectItem value="2">2 times</SelectItem>
-                    <SelectItem value="3">3 times</SelectItem>
-                    <SelectItem value="4">4 times</SelectItem>
+                    <SelectItem value="1">1 {t('common.time')}</SelectItem>
+                    <SelectItem value="2">2 {t('common.times')}</SelectItem>
+                    <SelectItem value="3">3 {t('common.times')}</SelectItem>
+                    <SelectItem value="4">4 {t('common.times')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label>Reminder times</Label>
+                <Label>{t('settings.notifications.times')}</Label>
                 <p className="text-sm text-muted-foreground mb-2">
                   {(profile.tracker_times || []).join(', ')}
                 </p>
@@ -87,12 +89,12 @@ export const NotificationSettings = ({
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Reflection Reminders
+          {t('journal.morning')} & {t('journal.evening')}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Morning reflection</Label>
+              <Label>{t('settings.notifications.morningReflection')}</Label>
               <p className="text-sm text-muted-foreground">
                 {profile.morning_reflection_time}
               </p>
@@ -107,7 +109,7 @@ export const NotificationSettings = ({
 
           <div className="flex items-center justify-between">
             <div>
-              <Label>Evening reflection</Label>
+              <Label>{t('settings.notifications.eveningReflection')}</Label>
               <p className="text-sm text-muted-foreground">
                 {profile.evening_reflection_time}
               </p>
@@ -124,11 +126,11 @@ export const NotificationSettings = ({
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-foreground mb-4">
-          Activity Reminders
+          {t('settings.notifications.activityReminders')}
         </h3>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <Label>Enable activity reminders</Label>
+            <Label>{t('settings.notifications.activityReminders')}</Label>
             <Switch
               checked={profile.activity_reminders_enabled}
               onCheckedChange={(checked) =>
@@ -139,7 +141,7 @@ export const NotificationSettings = ({
 
           {profile.activity_reminders_enabled && (
             <div>
-              <Label>Minutes before activity</Label>
+              <Label>{t('settings.notifications.minutesBefore')}</Label>
               <Select
                 value={profile.activity_reminder_minutes?.toString()}
                 onValueChange={(value) =>
@@ -150,11 +152,11 @@ export const NotificationSettings = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="5">5 minutes</SelectItem>
-                  <SelectItem value="10">10 minutes</SelectItem>
-                  <SelectItem value="15">15 minutes</SelectItem>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="60">1 hour</SelectItem>
+                  <SelectItem value="5">5 {t('common.minutes')}</SelectItem>
+                  <SelectItem value="10">10 {t('common.minutes')}</SelectItem>
+                  <SelectItem value="15">15 {t('common.minutes')}</SelectItem>
+                  <SelectItem value="30">30 {t('common.minutes')}</SelectItem>
+                  <SelectItem value="60">1 {t('common.hour')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
