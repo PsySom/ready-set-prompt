@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
   id: string;
@@ -17,13 +18,6 @@ interface Message {
 }
 
 type SessionType = 'morning' | 'evening' | 'free';
-
-const QUICK_REPLIES = [
-  { emoji: '😔', text: "Something's bothering me" },
-  { emoji: '😊', text: "Want to share good news" },
-  { emoji: '🤔', text: "Just thinking..." },
-  { emoji: '✍️', text: "Free writing" }
-];
 
 const Journal = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -35,6 +29,14 @@ const Journal = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const QUICK_REPLIES = [
+    { emoji: '😔', text: t('journal.quickReplies.bothering') },
+    { emoji: '😊', text: t('journal.quickReplies.goodNews') },
+    { emoji: '🤔', text: t('journal.quickReplies.thinking') },
+    { emoji: '✍️', text: t('journal.quickReplies.freeWriting') }
+  ];
 
   useEffect(() => {
     initializeSession();
@@ -74,7 +76,7 @@ const Journal = () => {
       session_id: session.id,
       user_id: user.id,
       message_type: 'app' as const,
-      content: 'Hi! How are you feeling today?'
+      content: t('journal.greetings.initial')
     };
 
     const { data: message } = await supabase
@@ -125,7 +127,7 @@ const Journal = () => {
           session_id: sessionId,
           user_id: user.id,
           message_type: 'app' as const,
-          content: "Thanks for sharing. Would you like to reflect on this?"
+          content: t('journal.greetings.thanks')
         };
 
         const { data: response } = await supabase
@@ -174,20 +176,20 @@ const Journal = () => {
   const getScenarioQuestions = (type: SessionType): string[] => {
     if (type === 'morning') {
       return [
-        "Good morning! Let's start your day with reflection. 🌅\n\nHow did you sleep? (Rate 0-10)",
-        "What do you plan to do today?",
-        "What's your intention for the day?",
-        "How are you feeling right now?",
-        "Great! Have a wonderful day! ✨"
+        t('journal.morningScenario.greeting'),
+        t('journal.morningScenario.plans'),
+        t('journal.morningScenario.intention'),
+        t('journal.morningScenario.feeling'),
+        t('journal.morningScenario.closing')
       ];
     } else if (type === 'evening') {
       return [
-        "Good evening! Let's reflect on your day. 🌙\n\nHow was your day? (Rate 0-10)",
-        "What went well today?",
-        "What are you grateful for?",
-        "What would you like to improve tomorrow?",
-        "How are you feeling now?",
-        "Sleep well! See you tomorrow. 💤"
+        t('journal.eveningScenario.greeting'),
+        t('journal.eveningScenario.wentWell'),
+        t('journal.eveningScenario.grateful'),
+        t('journal.eveningScenario.improve'),
+        t('journal.eveningScenario.feeling'),
+        t('journal.eveningScenario.closing')
       ];
     }
     return [];
@@ -241,7 +243,7 @@ const Journal = () => {
       <div className="flex flex-col h-[calc(100vh-8rem)]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h1 className="text-2xl font-bold text-foreground">Journal</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('journal.title')}</h1>
           <div className="flex gap-2">
             <TooltipProvider>
               <Tooltip>
@@ -251,7 +253,7 @@ const Journal = () => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Use this space to reflect and journal your thoughts</p>
+                  <p>{t('journal.tooltipInfo')}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -324,7 +326,7 @@ const Journal = () => {
               onClick={() => startScenario('morning')}
               className="flex-1"
             >
-              🌅 Morning Reflection
+              🌅 {t('journal.morning')}
             </Button>
             <Button
               variant="secondary"
@@ -332,7 +334,7 @@ const Journal = () => {
               onClick={() => startScenario('evening')}
               className="flex-1"
             >
-              🌙 Evening Reflection
+              🌙 {t('journal.evening')}
             </Button>
           </div>
         )}
@@ -349,7 +351,7 @@ const Journal = () => {
                   sendMessage(inputText);
                 }
               }}
-              placeholder="Write your thoughts..."
+              placeholder={t('journal.placeholder')}
               className="min-h-[60px] max-h-[120px] resize-none"
               maxLength={2000}
               disabled={isLoading}
@@ -363,7 +365,7 @@ const Journal = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Coming soon</p>
+                    <p>{t('journal.comingSoon')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -377,7 +379,7 @@ const Journal = () => {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {inputText.length}/2000 characters
+            {inputText.length}/2000 {t('journal.characters')}
           </p>
         </div>
       </div>

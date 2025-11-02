@@ -1,16 +1,19 @@
 import { Card } from '@/components/ui/card';
 import { Smile, CheckCircle2, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface QuickStatsCardProps {
   entriesCount: number;
 }
 
 const QuickStatsCard = ({ entriesCount }: QuickStatsCardProps) => {
+  const { t } = useTranslation();
+  
   // Mock data - будет заменено на реальные расчеты
   const stats = [
-    { label: 'Mood', value: 'Good', icon: Smile, color: 'text-primary' },
-    { label: 'Activities', value: '67%', icon: CheckCircle2, color: 'text-accent' },
-    { label: 'Streak', value: '5 days', icon: TrendingUp, color: 'text-secondary' },
+    { label: t('dashboard.quickStats.mood'), value: t('dashboard.quickStats.moodValue'), icon: Smile, color: 'text-primary' },
+    { label: t('dashboard.quickStats.activities'), value: '67%', icon: CheckCircle2, color: 'text-accent' },
+    { label: t('dashboard.quickStats.streak'), value: `5 ${t('dashboard.quickStats.days')}`, icon: TrendingUp, color: 'text-secondary' },
   ];
 
   return (

@@ -5,10 +5,12 @@ import { AlertCircle, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const InsightsPreview = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [recommendationCount, setRecommendationCount] = useState(0);
   const [topRecommendation, setTopRecommendation] = useState<any>(null);
 
@@ -68,7 +70,7 @@ const InsightsPreview = () => {
           <div className="flex items-center gap-2">
             <span className="text-2xl">{topRecommendation.activity_templates.emoji}</span>
             <h3 className="font-semibold text-foreground">
-              {recommendationCount} {recommendationCount === 1 ? 'recommendation' : 'recommendations'} for you
+              {recommendationCount} {recommendationCount === 1 ? t('dashboard.insightsPreview.recommendation') : t('dashboard.insightsPreview.recommendations')} {t('dashboard.insightsPreview.forYou')}
             </h3>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -77,7 +79,7 @@ const InsightsPreview = () => {
           
           <div className="flex gap-2 pt-2">
             <Button size="sm" onClick={() => navigate('/recommendations')}>
-              View recommendations
+              {t('dashboard.insightsPreview.viewRecommendations')}
             </Button>
           </div>
         </div>

@@ -64,7 +64,29 @@
     "quickTracker": "Suivi rapide",
     "todayActivities": "Activités d'aujourd'hui",
     "insights": "Aperçus",
-    "recommendations": "Recommandations"
+    "recommendations": "Recommandations",
+    "viewTrackerHistory": "Voir l'historique du suivi",
+    "activityTemplates": "Modèles d'activités",
+    "todayActivitiesCard": {
+      "title": "Activités d'aujourd'hui",
+      "add": "Ajouter",
+      "noActivities": "Aucune activité prévue pour aujourd'hui",
+      "planYourDay": "Planifiez votre journée",
+      "viewAll": "Voir toutes les activités"
+    },
+    "quickStats": {
+      "mood": "Humeur",
+      "moodValue": "Bonne",
+      "activities": "Activités",
+      "streak": "Série",
+      "days": "jours"
+    },
+    "insightsPreview": {
+      "recommendation": "recommandation",
+      "recommendations": "recommandations",
+      "forYou": "pour vous",
+      "viewRecommendations": "Voir les recommandations"
+    }
   },
   "trackers": {
     "title": "Comment vous sentez-vous?",
@@ -138,7 +160,41 @@
     "evening": "Réflexion du soir",
     "free": "Écriture libre",
     "history": "Historique du journal",
-    "insights": "Aperçus du journal"
+    "insights": "Aperçus du journal",
+    "tooltipInfo": "Utilisez cet espace pour réfléchir et tenir votre journal",
+    "characters": "caractères",
+    "comingSoon": "Bientôt disponible",
+    "quickReplies": {
+      "bothering": "Quelque chose me dérange",
+      "goodNews": "Je veux partager de bonnes nouvelles",
+      "thinking": "Je réfléchis...",
+      "freeWriting": "Écriture libre"
+    },
+    "greetings": {
+      "initial": "Salut! Comment vous sentez-vous aujourd'hui?",
+      "thanks": "Merci de partager. Souhaitez-vous réfléchir à ce sujet?"
+    },
+    "morningScenario": {
+      "greeting": "Bonjour! Commençons votre journée par une réflexion. 🌅\n\nComment avez-vous dormi? (Notez de 0 à 10)",
+      "plans": "Que prévoyez-vous de faire aujourd'hui?",
+      "intention": "Quelle est votre intention pour la journée?",
+      "feeling": "Comment vous sentez-vous en ce moment?",
+      "closing": "Génial! Passez une merveilleuse journée! ✨"
+    },
+    "eveningScenario": {
+      "greeting": "Bonsoir! Réfléchissons à votre journée. 🌙\n\nComment s'est passée votre journée? (Notez de 0 à 10)",
+      "wentWell": "Qu'est-ce qui s'est bien passé aujourd'hui?",
+      "grateful": "Pour quoi êtes-vous reconnaissant?",
+      "improve": "Que souhaiteriez-vous améliorer demain?",
+      "feeling": "Comment vous sentez-vous maintenant?",
+      "closing": "Dormez bien! À demain. 💤"
+    },
+    "stats": {
+      "totalEntries": "Entrées totales",
+      "currentStreak": "Série actuelle",
+      "longestStreak": "Plus longue série",
+      "thisMonth": "Ce mois-ci"
+    }
   },
   "tests": {
     "title": "Tests psychologiques",

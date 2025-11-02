@@ -64,7 +64,29 @@
     "quickTracker": "Quick Tracker",
     "todayActivities": "Today's Activities",
     "insights": "Insights",
-    "recommendations": "Recommendations"
+    "recommendations": "Recommendations",
+    "viewTrackerHistory": "View Tracker History",
+    "activityTemplates": "Activity Templates",
+    "todayActivitiesCard": {
+      "title": "Today's Activities",
+      "add": "Add",
+      "noActivities": "No activities planned for today",
+      "planYourDay": "Plan Your Day",
+      "viewAll": "View all activities"
+    },
+    "quickStats": {
+      "mood": "Mood",
+      "moodValue": "Good",
+      "activities": "Activities",
+      "streak": "Streak",
+      "days": "days"
+    },
+    "insightsPreview": {
+      "recommendation": "recommendation",
+      "recommendations": "recommendations",
+      "forYou": "for you",
+      "viewRecommendations": "View recommendations"
+    }
   },
   "trackers": {
     "title": "How are you feeling?",
@@ -138,7 +160,41 @@
     "evening": "Evening Reflection",
     "free": "Free Writing",
     "history": "Journal History",
-    "insights": "Journal Insights"
+    "insights": "Journal Insights",
+    "tooltipInfo": "Use this space to reflect and journal your thoughts",
+    "characters": "characters",
+    "comingSoon": "Coming soon",
+    "quickReplies": {
+      "bothering": "Something's bothering me",
+      "goodNews": "Want to share good news",
+      "thinking": "Just thinking...",
+      "freeWriting": "Free writing"
+    },
+    "greetings": {
+      "initial": "Hi! How are you feeling today?",
+      "thanks": "Thanks for sharing. Would you like to reflect on this?"
+    },
+    "morningScenario": {
+      "greeting": "Good morning! Let's start your day with reflection. 🌅\n\nHow did you sleep? (Rate 0-10)",
+      "plans": "What do you plan to do today?",
+      "intention": "What's your intention for the day?",
+      "feeling": "How are you feeling right now?",
+      "closing": "Great! Have a wonderful day! ✨"
+    },
+    "eveningScenario": {
+      "greeting": "Good evening! Let's reflect on your day. 🌙\n\nHow was your day? (Rate 0-10)",
+      "wentWell": "What went well today?",
+      "grateful": "What are you grateful for?",
+      "improve": "What would you like to improve tomorrow?",
+      "feeling": "How are you feeling now?",
+      "closing": "Sleep well! See you tomorrow. 💤"
+    },
+    "stats": {
+      "totalEntries": "Total Entries",
+      "currentStreak": "Current Streak",
+      "longestStreak": "Longest Streak",
+      "thisMonth": "This Month"
+    }
   },
   "tests": {
     "title": "Psychological Tests",

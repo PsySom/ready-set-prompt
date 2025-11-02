@@ -11,6 +11,7 @@ import TodayActivitiesCard from '@/components/dashboard/TodayActivitiesCard';
 import QuickStatsCard from '@/components/dashboard/QuickStatsCard';
 import InsightsPreview from '@/components/dashboard/InsightsPreview';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 export interface TrackerData {
   moodScore: number;
@@ -25,6 +26,7 @@ export interface TrackerData {
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [todayEntries, setTodayEntries] = useState<any[]>([]);
 
@@ -90,7 +92,7 @@ const Dashboard = () => {
             className="flex-1"
             onClick={() => navigate('/tracker-history')}
           >
-            View Tracker History
+            {t('dashboard.viewTrackerHistory')}
           </Button>
           <Button 
             variant="outline" 
@@ -98,7 +100,7 @@ const Dashboard = () => {
             onClick={() => navigate('/activity-templates')}
           >
             <Library className="h-4 w-4" />
-            Activity Templates
+            {t('dashboard.activityTemplates')}
           </Button>
         </div>
         

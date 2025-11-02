@@ -3,9 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const TodayActivitiesCard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Mock data - будет заменено на реальные данные из Supabase
   const activities = [
@@ -32,18 +34,18 @@ const TodayActivitiesCard = () => {
   return (
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Today's Activities</h3>
+        <h3 className="text-lg font-semibold text-foreground">{t('dashboard.todayActivitiesCard.title')}</h3>
         <Button size="sm" variant="ghost" onClick={() => navigate('/calendar')}>
           <Plus className="h-4 w-4 mr-1" />
-          Add
+          {t('dashboard.todayActivitiesCard.add')}
         </Button>
       </div>
 
       {activities.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-muted-foreground">No activities planned for today</p>
+          <p className="text-muted-foreground">{t('dashboard.todayActivitiesCard.noActivities')}</p>
           <Button variant="outline" className="mt-4" onClick={() => navigate('/calendar')}>
-            Plan Your Day
+            {t('dashboard.todayActivitiesCard.planYourDay')}
           </Button>
         </div>
       ) : (
@@ -73,7 +75,7 @@ const TodayActivitiesCard = () => {
         className="w-full"
         onClick={() => navigate('/calendar')}
       >
-        View all activities
+        {t('dashboard.todayActivitiesCard.viewAll')}
       </Button>
     </Card>
   );

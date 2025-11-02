@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { TrendingUp, Calendar, Flame, BarChart3 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface JournalStatsProps {
   totalSessions: number;
@@ -14,6 +15,8 @@ export const JournalStats = ({
   longestStreak,
   thisMonthCount
 }: JournalStatsProps) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card className="p-4">
@@ -23,7 +26,7 @@ export const JournalStats = ({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{totalSessions}</p>
-            <p className="text-xs text-muted-foreground">Total Entries</p>
+            <p className="text-xs text-muted-foreground">{t('journal.stats.totalEntries')}</p>
           </div>
         </div>
       </Card>
@@ -35,7 +38,7 @@ export const JournalStats = ({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{currentStreak}</p>
-            <p className="text-xs text-muted-foreground">Current Streak</p>
+            <p className="text-xs text-muted-foreground">{t('journal.stats.currentStreak')}</p>
           </div>
         </div>
       </Card>
@@ -47,7 +50,7 @@ export const JournalStats = ({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{longestStreak}</p>
-            <p className="text-xs text-muted-foreground">Longest Streak</p>
+            <p className="text-xs text-muted-foreground">{t('journal.stats.longestStreak')}</p>
           </div>
         </div>
       </Card>
@@ -59,7 +62,7 @@ export const JournalStats = ({
           </div>
           <div>
             <p className="text-2xl font-bold text-foreground">{thisMonthCount}</p>
-            <p className="text-xs text-muted-foreground">This Month</p>
+            <p className="text-xs text-muted-foreground">{t('journal.stats.thisMonth')}</p>
           </div>
         </div>
       </Card>

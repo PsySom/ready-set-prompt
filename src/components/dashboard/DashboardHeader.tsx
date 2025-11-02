@@ -2,10 +2,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const DashboardHeader = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const today = new Date();
   const dateString = today.toLocaleDateString('en-US', { 
@@ -26,7 +28,7 @@ const DashboardHeader = () => {
         <div className="p-2 bg-primary/10 rounded-xl">
           <Brain className="h-6 w-6 text-primary" />
         </div>
-        <span className="font-semibold text-lg hidden sm:inline">Mental Wellness</span>
+        <span className="font-semibold text-lg hidden sm:inline">{t('app.name')}</span>
       </div>
 
       {/* Date */}
