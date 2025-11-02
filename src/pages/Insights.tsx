@@ -19,11 +19,13 @@ import ActivityCompletion from '@/components/insights/ActivityCompletion';
 import ActivityBreakdown from '@/components/insights/ActivityBreakdown';
 import PatternCards from '@/components/insights/PatternCards';
 import RecommendationsCard from '@/components/insights/RecommendationsCard';
+import { useTranslation } from 'react-i18next';
 
 type Period = 'week' | 'month' | '3months' | 'year';
 
 const Insights = () => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('month');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
@@ -95,7 +97,7 @@ const Insights = () => {
       });
     } catch (error) {
       console.error('Error fetching insights data:', error);
-      toast.error('Failed to load insights');
+      toast.error(t('insights.toasts.loadError'));
     } finally {
       setLoading(false);
     }
@@ -117,7 +119,7 @@ const Insights = () => {
     a.download = `insights-${period}-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success('Insights exported successfully');
+    toast.success(t('insights.toasts.exportSuccess'));
   };
 
   const getPeriodLabel = () => {
@@ -155,22 +157,22 @@ const Insights = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Insights</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('insights.title')}</h1>
               <p className="text-muted-foreground text-sm mt-1">{getPeriodLabel()}</p>
             </div>
             <Button onClick={handleExport} variant="outline" size="sm" disabled={!hasData}>
               <Download className="h-4 w-4 mr-2" />
-              Export
+              {t('insights.export')}
             </Button>
           </div>
 
           {/* Period Selector */}
           <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
             <TabsList className="grid grid-cols-4 w-full max-w-md">
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="month">Month</TabsTrigger>
-              <TabsTrigger value="3months">3 Months</TabsTrigger>
-              <TabsTrigger value="year">Year</TabsTrigger>
+              <TabsTrigger value="week">{t('insights.period.week')}</TabsTrigger>
+              <TabsTrigger value="month">{t('insights.period.month')}</TabsTrigger>
+              <TabsTrigger value="3months">{t('insights.period.3months')}</TabsTrigger>
+              <TabsTrigger value="year">{t('insights.period.year')}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -190,9 +192,9 @@ const Insights = () => {
         ) : !hasData ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-4">
             <div className="text-6xl mb-4">📊</div>
-            <h3 className="text-xl font-semibold text-foreground">Not enough data yet</h3>
+            <h3 className="text-xl font-semibold text-foreground">{t('insights.noData')}</h3>
             <p className="text-muted-foreground text-center max-w-md">
-              Keep tracking your mood, completing activities, and journaling to see personalized insights here.
+              {t('insights.keepTracking')}
             </p>
           </div>
         ) : (
@@ -202,7 +204,7 @@ const Insights = () => {
 
             {/* Mood Section */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Mood Trends</h2>
+              <h2 className="text-xl font-semibold text-foreground">{t('insights.mood')}</h2>
               <MoodTrendsChart entries={data.trackerEntries} period={period} />
               <MoodDistribution entries={data.trackerEntries} />
             </div>
@@ -210,7 +212,7 @@ const Insights = () => {
             {/* Emotional Landscape */}
             {data.trackerEntries.some((e: any) => e.tracker_emotions?.length > 0) && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-foreground">Emotional Landscape</h2>
+                <h2 className="text-xl font-semibold text-foreground">{t('insights.emotionalLandscape')}</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   <TopEmotions entries={data.trackerEntries} />
                   <EmotionBalance entries={data.trackerEntries} />
@@ -221,14 +223,14 @@ const Insights = () => {
             {/* Stress & Anxiety */}
             {data.trackerEntries.some((e: any) => e.stress_level !== null || e.anxiety_level !== null) && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-foreground">Stress & Anxiety</h2>
+                <h2 className="text-xl font-semibold text-foreground">{t('insights.stressAndAnxiety')}</h2>
                 <StressAnxietyChart entries={data.trackerEntries} period={period} />
               </div>
             )}
 
             {/* Energy & Satisfaction */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Energy & Satisfaction</h2>
+              <h2 className="text-xl font-semibold text-foreground">{t('insights.energyAndSatisfaction')}</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <EnergyPatterns entries={data.trackerEntries} period={period} />
                 <SatisfactionCharts entries={data.trackerEntries} />
@@ -238,7 +240,7 @@ const Insights = () => {
             {/* Activities */}
             {data.activities.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-foreground">Activities</h2>
+                <h2 className="text-xl font-semibold text-foreground">{t('insights.activities')}</h2>
                 <div className="grid md:grid-cols-2 gap-4">
                   <ActivityCompletion activities={data.activities} period={period} />
                   <ActivityBreakdown activities={data.activities} />

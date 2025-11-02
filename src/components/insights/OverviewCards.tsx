@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Activity, BookOpen, TrendingUp, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OverviewCardsProps {
   data: any;
@@ -7,6 +8,7 @@ interface OverviewCardsProps {
 
 const OverviewCards = ({ data }: OverviewCardsProps) => {
   const { trackerEntries, activities, journalSessions } = data;
+  const { t } = useTranslation();
 
   // Calculate average mood
   const moodEntries = trackerEntries.filter((e: any) => e.mood_score !== null);
@@ -58,14 +60,14 @@ const OverviewCards = ({ data }: OverviewCardsProps) => {
 
   const stats = [
     {
-      title: 'Average Mood',
+      title: t('insights.overview.averageMood'),
       value: avgMood,
       icon: getMoodEmoji(parseFloat(avgMood)),
       color: 'text-primary',
       bgColor: 'bg-primary/10',
     },
     {
-      title: 'Activities',
+      title: t('insights.overview.activities'),
       value: `${completedActivities}/${totalActivities}`,
       subtitle: `${completionRate}%`,
       icon: Activity,
@@ -73,15 +75,15 @@ const OverviewCards = ({ data }: OverviewCardsProps) => {
       bgColor: 'bg-secondary/10',
     },
     {
-      title: 'Current Streak',
+      title: t('insights.overview.currentStreak'),
       value: `${calculateStreak()}`,
-      subtitle: 'days',
+      subtitle: t('insights.overview.days'),
       icon: TrendingUp,
       color: 'text-accent',
       bgColor: 'bg-accent/10',
     },
     {
-      title: 'Journal Entries',
+      title: t('insights.overview.journalEntries'),
       value: journalSessions.length,
       icon: BookOpen,
       color: 'text-warning',

@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface MoodTrendsChartProps {
   entries: any[];
@@ -8,6 +9,8 @@ interface MoodTrendsChartProps {
 }
 
 const MoodTrendsChart = ({ entries, period }: MoodTrendsChartProps) => {
+  const { t } = useTranslation();
+  
   const data = entries
     .filter((e) => e.mood_score !== null)
     .map((entry) => {
@@ -46,7 +49,7 @@ const MoodTrendsChart = ({ entries, period }: MoodTrendsChartProps) => {
       return (
         <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
           <p className="text-2xl mb-1">{emoji}</p>
-          <p className="text-sm font-semibold">Mood: {value > 0 ? '+' : ''}{value}</p>
+          <p className="text-sm font-semibold">{t('insights.moodChart.mood')}: {value > 0 ? '+' : ''}{value}</p>
           <p className="text-xs text-muted-foreground">{payload[0].payload.time}</p>
         </div>
       );
@@ -60,7 +63,7 @@ const MoodTrendsChart = ({ entries, period }: MoodTrendsChartProps) => {
 
   return (
     <Card className="p-6">
-      <h3 className="font-semibold text-foreground mb-4">Mood Over Time</h3>
+      <h3 className="font-semibold text-foreground mb-4">{t('insights.moodChart.title')}</h3>
       
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data}>
@@ -109,15 +112,15 @@ const MoodTrendsChart = ({ entries, period }: MoodTrendsChartProps) => {
       <div className="flex items-center justify-center gap-6 text-xs mt-4">
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded bg-accent" />
-          <span className="text-muted-foreground">Positive (0 to +5)</span>
+          <span className="text-muted-foreground">{t('insights.moodChart.positive')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-3 w-3 rounded bg-destructive" />
-          <span className="text-muted-foreground">Negative (-5 to 0)</span>
+          <span className="text-muted-foreground">{t('insights.moodChart.negative')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="h-0.5 w-6 bg-primary" style={{ borderTop: '2px dashed hsl(var(--primary))' }} />
-          <span className="text-muted-foreground">Average: {avgMood.toFixed(1)}</span>
+          <span className="text-muted-foreground">{t('insights.moodChart.average')}: {avgMood.toFixed(1)}</span>
         </div>
       </div>
     </Card>

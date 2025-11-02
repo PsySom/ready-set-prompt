@@ -273,7 +273,54 @@
     "recommendations": "Recommandations",
     "export": "Exporter",
     "noData": "Pas encore assez de données",
-    "keepTracking": "Continuez à suivre votre humeur, à compléter des activités et à tenir un journal pour voir des aperçus personnalisés ici."
+    "keepTracking": "Continuez à suivre votre humeur, à compléter des activités et à tenir un journal pour voir des aperçus personnalisés ici.",
+    "overview": {
+      "averageMood": "Humeur moyenne",
+      "activities": "Activités",
+      "currentStreak": "Série actuelle",
+      "journalEntries": "Entrées de journal",
+      "days": "jours"
+    },
+    "moodChart": {
+      "title": "Humeur au fil du temps",
+      "positive": "Positif (0 à +5)",
+      "negative": "Négatif (-5 à 0)",
+      "average": "Moyenne",
+      "mood": "Humeur"
+    },
+    "emotionalLandscape": "Paysage émotionnel",
+    "stressAndAnxiety": "Stress et anxiété",
+    "energyAndSatisfaction": "Énergie et satisfaction",
+    "patterns": {
+      "title": "Modèles et aperçus",
+      "bestDay": "Vous vous sentez le mieux le",
+      "averageMoodScore": "Score d'humeur moyen",
+      "activitiesBoost": "Les activités améliorent votre humeur",
+      "pointsHigher": "points de plus les jours actifs",
+      "mostActive": "Plus actif",
+      "activitiesScheduled": "activités planifiées",
+      "greatConsistency": "Excellente régularité de suivi",
+      "daysTracked": "jours suivis",
+      "timeSlots": {
+        "night": "la nuit",
+        "morning": "le matin",
+        "afternoon": "l'après-midi",
+        "evening": "le soir"
+      },
+      "weekdays": {
+        "monday": "lundi",
+        "tuesday": "mardi",
+        "wednesday": "mercredi",
+        "thursday": "jeudi",
+        "friday": "vendredi",
+        "saturday": "samedi",
+        "sunday": "dimanche"
+      }
+    },
+    "toasts": {
+      "exportSuccess": "Aperçus exportés avec succès",
+      "loadError": "Impossible de charger les aperçus"
+    }
   },
   "recommendations": {
     "title": "Recommandations",

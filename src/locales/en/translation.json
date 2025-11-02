@@ -273,7 +273,54 @@
     "recommendations": "Recommendations",
     "export": "Export",
     "noData": "Not enough data yet",
-    "keepTracking": "Keep tracking your mood, completing activities, and journaling to see personalized insights here."
+    "keepTracking": "Keep tracking your mood, completing activities, and journaling to see personalized insights here.",
+    "overview": {
+      "averageMood": "Average Mood",
+      "activities": "Activities",
+      "currentStreak": "Current Streak",
+      "journalEntries": "Journal Entries",
+      "days": "days"
+    },
+    "moodChart": {
+      "title": "Mood Over Time",
+      "positive": "Positive (0 to +5)",
+      "negative": "Negative (-5 to 0)",
+      "average": "Average",
+      "mood": "Mood"
+    },
+    "emotionalLandscape": "Emotional Landscape",
+    "stressAndAnxiety": "Stress & Anxiety",
+    "energyAndSatisfaction": "Energy & Satisfaction",
+    "patterns": {
+      "title": "Patterns & Insights",
+      "bestDay": "You feel best on",
+      "averageMoodScore": "Average mood score",
+      "activitiesBoost": "Activities boost your mood",
+      "pointsHigher": "points higher on active days",
+      "mostActive": "Most active in the",
+      "activitiesScheduled": "activities scheduled",
+      "greatConsistency": "Great tracking consistency",
+      "daysTracked": "of days tracked",
+      "timeSlots": {
+        "night": "Night",
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
+      "weekdays": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      }
+    },
+    "toasts": {
+      "exportSuccess": "Insights exported successfully",
+      "loadError": "Failed to load insights"
+    }
   },
   "recommendations": {
     "title": "Recommendations",

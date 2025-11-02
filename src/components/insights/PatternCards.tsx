@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card';
 import { TrendingUp, Calendar, Activity, Sun } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface PatternCardsProps {
   data: any;
@@ -8,6 +9,7 @@ interface PatternCardsProps {
 
 const PatternCards = ({ data }: PatternCardsProps) => {
   const { trackerEntries, activities } = data;
+  const { t } = useTranslation();
 
   if (trackerEntries.length === 0 && activities.length === 0) {
     return null;
@@ -35,10 +37,11 @@ const PatternCards = ({ data }: PatternCardsProps) => {
       .sort((a, b) => b.avg - a.avg)[0];
 
     if (bestDay) {
+      const dayKey = bestDay.day.toLowerCase();
       patterns.push({
         icon: Sun,
-        title: `You feel best on ${bestDay.day}s`,
-        description: `Average mood score: ${bestDay.avg.toFixed(1)}`,
+        title: `${t('insights.patterns.bestDay')} ${t(`insights.patterns.weekdays.${dayKey}`)}`,
+        description: `${t('insights.patterns.averageMoodScore')}: ${bestDay.avg.toFixed(1)}`,
         color: 'text-accent',
         bgColor: 'bg-accent/10',
       });
@@ -66,8 +69,8 @@ const PatternCards = ({ data }: PatternCardsProps) => {
         if (avgActivityDayMood > avgOtherDayMood) {
           patterns.push({
             icon: Activity,
-            title: 'Activities boost your mood',
-            description: `${((avgActivityDayMood - avgOtherDayMood).toFixed(1))} points higher on active days`,
+            title: t('insights.patterns.activitiesBoost'),
+            description: `${((avgActivityDayMood - avgOtherDayMood).toFixed(1))} ${t('insights.patterns.pointsHigher')}`,
             color: 'text-primary',
             bgColor: 'bg-primary/10',
           });
@@ -95,10 +98,11 @@ const PatternCards = ({ data }: PatternCardsProps) => {
       .sort((a, b) => b[1] - a[1])[0];
 
     if (mostActive) {
+      const timeSlotKey = mostActive[0].toLowerCase();
       patterns.push({
         icon: Calendar,
-        title: `Most active in the ${mostActive[0]}`,
-        description: `${mostActive[1]} activities scheduled`,
+        title: `${t('insights.patterns.mostActive')} ${t(`insights.patterns.timeSlots.${timeSlotKey}`)}`,
+        description: `${mostActive[1]} ${t('insights.patterns.activitiesScheduled')}`,
         color: 'text-secondary',
         bgColor: 'bg-secondary/10',
       });
@@ -116,8 +120,8 @@ const PatternCards = ({ data }: PatternCardsProps) => {
     if (consistency >= 70) {
       patterns.push({
         icon: TrendingUp,
-        title: 'Great tracking consistency',
-        description: `${consistency.toFixed(0)}% of days tracked`,
+        title: t('insights.patterns.greatConsistency'),
+        description: `${consistency.toFixed(0)}% ${t('insights.patterns.daysTracked')}`,
         color: 'text-accent',
         bgColor: 'bg-accent/10',
       });
@@ -130,7 +134,7 @@ const PatternCards = ({ data }: PatternCardsProps) => {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-foreground">Patterns & Insights</h2>
+      <h2 className="text-xl font-semibold text-foreground">{t('insights.patterns.title')}</h2>
       <div className="grid md:grid-cols-2 gap-4">
         {patterns.map((pattern, index) => (
           <Card key={index} className="p-4">
