@@ -316,6 +316,11 @@
     "viewAll": "View All",
     "noData": "No data available",
     "tryAgain": "Try Again",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "pageNotFound": "Page not found",
+    "pageNotFoundDescription": "The page you're looking for doesn't exist or has been moved.",
+    "backToDashboard": "Back to Dashboard",
+    "noDataYet": "No data yet",
+    "getStarted": "Get Started"
   }
 }

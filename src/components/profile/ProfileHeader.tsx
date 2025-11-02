@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
-import { Camera, Edit } from 'lucide-react';
+import { Camera, Edit, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -73,22 +73,36 @@ export const ProfileHeader = ({ profile, onEdit, onAvatarUpdate }: ProfileHeader
       <div className="flex flex-col md:flex-row items-center gap-6">
         <div className="relative">
           <Avatar className="h-32 w-32">
-            <AvatarImage src={profile.avatar_url} alt={profile.full_name} />
+            <AvatarImage 
+              src={profile.avatar_url} 
+              alt={`${profile.full_name}'s profile picture`}
+            />
             <AvatarFallback className="text-3xl">{initials}</AvatarFallback>
           </Avatar>
-          <label htmlFor="avatar-upload">
-            <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors">
-              <Camera className="h-4 w-4 text-primary-foreground" />
+          <label 
+            htmlFor="avatar-upload"
+            aria-label="Upload new profile picture"
+          >
+            <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/90 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center">
+              {uploading ? (
+                <Loader2 className="h-4 w-4 text-primary-foreground animate-spin" aria-hidden="true" />
+              ) : (
+                <Camera className="h-4 w-4 text-primary-foreground" aria-hidden="true" />
+              )}
             </div>
           </label>
           <input
             id="avatar-upload"
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/gif,image/webp"
             onChange={handleAvatarUpload}
             disabled={uploading}
             className="hidden"
+            aria-describedby="avatar-upload-description"
           />
+          <span id="avatar-upload-description" className="sr-only">
+            Upload a new profile picture. Maximum file size: 5MB. Supported formats: JPG, PNG, GIF, WebP
+          </span>
         </div>
 
         <div className="flex-1 text-center md:text-left">
@@ -96,8 +110,8 @@ export const ProfileHeader = ({ profile, onEdit, onAvatarUpdate }: ProfileHeader
             {profile.full_name || 'Anonymous User'}
           </h1>
           <p className="text-muted-foreground mb-4">Member since {joinDate}</p>
-          <Button onClick={onEdit}>
-            <Edit className="h-4 w-4 mr-2" />
+          <Button onClick={onEdit} aria-label="Edit profile information">
+            <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
             Edit Profile
           </Button>
         </div>
