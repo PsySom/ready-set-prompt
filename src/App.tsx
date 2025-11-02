@@ -14,6 +14,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 // App pages
 import Dashboard from "./pages/Dashboard";
 import TrackerHistory from "./pages/TrackerHistory";
+import ActivityTemplates from "./pages/ActivityTemplates";
 import Calendar from "./pages/Calendar";
 import Journal from "./pages/Journal";
 import Insights from "./pages/Insights";
@@ -58,6 +59,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <TrackerHistory />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/activity-templates"
+              element={
+                <ProtectedRoute>
+                  <ActivityTemplates />
                 </ProtectedRoute>
               }
             />

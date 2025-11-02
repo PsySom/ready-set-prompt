@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
+import { Library } from 'lucide-react';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import QuickTrackerCard from '@/components/dashboard/QuickTrackerCard';
 import TodayActivitiesCard from '@/components/dashboard/TodayActivitiesCard';
@@ -82,14 +83,24 @@ const Dashboard = () => {
         
         <QuickStatsCard entriesCount={todayEntries.length} />
         
-        {/* Link to Tracker History */}
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={() => navigate('/tracker-history')}
-        >
-          View Full History & Analytics
-        </Button>
+        {/* Links to other pages */}
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => navigate('/tracker-history')}
+          >
+            View Tracker History
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex-1 gap-2"
+            onClick={() => navigate('/activity-templates')}
+          >
+            <Library className="h-4 w-4" />
+            Activity Templates
+          </Button>
+        </div>
         
         <InsightsPreview />
       </div>

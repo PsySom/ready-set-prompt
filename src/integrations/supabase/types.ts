@@ -77,6 +77,48 @@ export type Database = {
         }
         Relationships: []
       }
+      activity_templates: {
+        Row: {
+          category: Database["public"]["Enums"]["activity_category"]
+          created_at: string | null
+          default_duration_minutes: number | null
+          description: string | null
+          emoji: string
+          id: string
+          impact_type: Database["public"]["Enums"]["activity_impact"]
+          is_system: boolean | null
+          name: string
+          name_en: string
+          name_fr: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["activity_category"]
+          created_at?: string | null
+          default_duration_minutes?: number | null
+          description?: string | null
+          emoji: string
+          id?: string
+          impact_type: Database["public"]["Enums"]["activity_impact"]
+          is_system?: boolean | null
+          name: string
+          name_en: string
+          name_fr: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["activity_category"]
+          created_at?: string | null
+          default_duration_minutes?: number | null
+          description?: string | null
+          emoji?: string
+          id?: string
+          impact_type?: Database["public"]["Enums"]["activity_impact"]
+          is_system?: boolean | null
+          name?: string
+          name_en?: string
+          name_fr?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number | null
