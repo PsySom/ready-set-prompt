@@ -6,6 +6,7 @@ import { DaySection } from './DaySection';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 interface ListViewProps {
   currentDate: Date;
@@ -13,6 +14,7 @@ interface ListViewProps {
 }
 
 export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,14 +114,14 @@ export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
             </div>
           ) : selectedDayActivities.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-muted-foreground mb-2">No activities yet</p>
-              <p className="text-sm text-muted-foreground">Add one to get started!</p>
+              <p className="text-muted-foreground mb-2">{t('calendar.noActivitiesYet')}</p>
+              <p className="text-sm text-muted-foreground">{t('calendar.addOneToStart')}</p>
             </div>
           ) : (
             <>
               <DaySection
-                title="🌅 MORNING"
-                timeRange="5:00-11:59"
+                title={`🌅 ${t('calendar.sections.morning')}`}
+                timeRange={t('calendar.timeRanges.morning')}
                 activities={selectedDayActivities.filter(a => {
                   if (!a.start_time) return false;
                   const hour = parseInt(a.start_time.split(':')[0]);
@@ -129,8 +131,8 @@ export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
               />
               
               <DaySection
-                title="☀️ DAY"
-                timeRange="12:00-17:59"
+                title={`☀️ ${t('calendar.sections.day')}`}
+                timeRange={t('calendar.timeRanges.day')}
                 activities={selectedDayActivities.filter(a => {
                   if (!a.start_time) return false;
                   const hour = parseInt(a.start_time.split(':')[0]);
@@ -140,8 +142,8 @@ export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
               />
               
               <DaySection
-                title="🌙 EVENING"
-                timeRange="18:00-23:59"
+                title={`🌙 ${t('calendar.sections.evening')}`}
+                timeRange={t('calendar.timeRanges.evening')}
                 activities={selectedDayActivities.filter(a => {
                   if (!a.start_time) return false;
                   const hour = parseInt(a.start_time.split(':')[0]);
@@ -151,7 +153,7 @@ export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
               />
               
               <DaySection
-                title="📌 ANYTIME"
+                title={`📌 ${t('calendar.sections.anytime')}`}
                 activities={selectedDayActivities.filter(a => !a.start_time)}
                 onUpdate={fetchActivities}
               />
@@ -165,11 +167,11 @@ export const ListView = ({ currentDate, onDateChange }: ListViewProps) => {
         <div className="border-t border-border bg-card p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">
-              {completedCount}/{totalCount} completed ({completionRate}%)
+              {completedCount}/{totalCount} {t('calendar.completed')} ({completionRate}%)
             </span>
             {completionRate >= 80 && (
               <span className="text-sm text-accent font-medium">
-                🎉 Great progress!
+                🎉 {t('calendar.greatProgress')}
               </span>
             )}
           </div>

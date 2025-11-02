@@ -326,5 +326,38 @@
     "times": "раза",
     "minutes": "минут",
     "hour": "час"
+  },
+  "calendar": {
+    "title": "Календарь",
+    "today": "Сегодня",
+    "addActivity": "Добавить активность",
+    "list": "Список",
+    "calendar": "Календарь",
+    "noActivitiesYet": "Активностей пока нет",
+    "addOneToStart": "Добавьте, чтобы начать!",
+    "completed": "выполнено",
+    "greatProgress": "Отличный прогресс!",
+    "weekdays": {
+      "short": {
+        "mon": "Пн",
+        "tue": "Вт",
+        "wed": "Ср",
+        "thu": "Чт",
+        "fri": "Пт",
+        "sat": "Сб",
+        "sun": "Вс"
+      }
+    },
+    "sections": {
+      "morning": "УТРО",
+      "day": "ДЕНЬ",
+      "evening": "ВЕЧЕР",
+      "anytime": "В ЛЮБОЕ ВРЕМЯ"
+    },
+    "timeRanges": {
+      "morning": "5:00-11:59",
+      "day": "12:00-17:59",
+      "evening": "18:00-23:59"
+    }
   }
 }

@@ -326,5 +326,38 @@
     "times": "fois",
     "minutes": "minutes",
     "hour": "heure"
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "today": "Aujourd'hui",
+    "addActivity": "Ajouter une activité",
+    "list": "Liste",
+    "calendar": "Calendrier",
+    "noActivitiesYet": "Pas encore d'activités",
+    "addOneToStart": "Ajoutez-en une pour commencer!",
+    "completed": "terminé",
+    "greatProgress": "Excellent progrès!",
+    "weekdays": {
+      "short": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
+    },
+    "sections": {
+      "morning": "MATIN",
+      "day": "JOURNÉE",
+      "evening": "SOIRÉE",
+      "anytime": "À TOUT MOMENT"
+    },
+    "timeRanges": {
+      "morning": "5:00-11:59",
+      "day": "12:00-17:59",
+      "evening": "18:00-23:59"
+    }
   }
 }

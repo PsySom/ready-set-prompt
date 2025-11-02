@@ -3,6 +3,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useTranslation } from 'react-i18next';
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -17,6 +18,7 @@ const IMPACT_COLORS: Record<string, string> = {
 };
 
 export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [activities, setActivities] = useState<any[]>([]);
 
@@ -26,6 +28,16 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+
+  const weekdays = [
+    t('calendar.weekdays.short.mon'),
+    t('calendar.weekdays.short.tue'),
+    t('calendar.weekdays.short.wed'),
+    t('calendar.weekdays.short.thu'),
+    t('calendar.weekdays.short.fri'),
+    t('calendar.weekdays.short.sat'),
+    t('calendar.weekdays.short.sun')
+  ];
 
   useEffect(() => {
     if (user) {
@@ -67,8 +79,8 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
 
         {/* Weekday Headers */}
         <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">
+          {weekdays.map((day, index) => (
+            <div key={`${day}-${index}`} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">
               {day}
             </div>
           ))}

@@ -7,8 +7,10 @@ import { ListView } from '@/components/calendar/ListView';
 import { CalendarView } from '@/components/calendar/CalendarView';
 import { ActivityFormModal } from '@/components/calendar/ActivityFormModal';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 const Calendar = () => {
+  const { t } = useTranslation();
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -53,21 +55,21 @@ const Calendar = () => {
               size="sm"
               onClick={goToToday}
             >
-              Today
+              {t('calendar.today')}
             </Button>
           </div>
 
           <div className="flex items-center justify-between">
             <Tabs value={view} onValueChange={(v) => setView(v as 'list' | 'calendar')}>
               <TabsList>
-                <TabsTrigger value="list">List</TabsTrigger>
-                <TabsTrigger value="calendar">Calendar</TabsTrigger>
+                <TabsTrigger value="list">{t('calendar.list')}</TabsTrigger>
+                <TabsTrigger value="calendar">{t('calendar.calendar')}</TabsTrigger>
               </TabsList>
             </Tabs>
 
             <Button onClick={() => setIsAddModalOpen(true)} size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Add Activity
+              {t('calendar.addActivity')}
             </Button>
           </div>
         </div>
