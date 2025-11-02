@@ -60,22 +60,22 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
 
   return (
     <ScrollArea className="h-full">
-      <div className="p-4">
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-semibold">{format(currentDate, 'MMMM yyyy')}</h2>
+      <div className="p-2 sm:p-4">
+        <div className="text-center mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold">{format(currentDate, 'MMMM yyyy')}</h2>
         </div>
 
         {/* Weekday Headers */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="text-center text-xs font-medium text-muted-foreground py-2">
+            <div key={day} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">
               {day}
             </div>
           ))}
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {days.map((day) => {
             const dayActivities = getActivitiesForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
@@ -88,7 +88,7 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
                 key={day.toString()}
                 onClick={() => onDateChange(day)}
                 className={`
-                  relative aspect-square p-2 rounded-lg border transition-all
+                  relative aspect-square p-1 sm:p-2 rounded-md sm:rounded-lg border transition-all
                   ${isCurrentMonth ? 'border-border' : 'border-transparent'}
                   ${isToday ? 'border-2 border-primary' : ''}
                   ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-card hover:bg-accent/10'}
@@ -96,41 +96,41 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
                 `}
               >
                 <div className="flex flex-col h-full">
-                  <span className={`text-sm font-medium ${isSelected ? 'text-primary-foreground' : ''}`}>
+                  <span className={`text-xs sm:text-sm font-medium ${isSelected ? 'text-primary-foreground' : ''}`}>
                     {format(day, 'd')}
                   </span>
 
                   {/* Activity Dots */}
                   {dayActivities.length > 0 && (
-                    <div className="flex-1 flex flex-col items-center justify-center gap-1 mt-1">
-                      <div className="flex gap-1 flex-wrap justify-center">
+                    <div className="flex-1 flex flex-col items-center justify-center gap-0.5 sm:gap-1 mt-0.5 sm:mt-1">
+                      <div className="flex gap-0.5 sm:gap-1 flex-wrap justify-center">
                         {dayActivities.slice(0, 3).map((activity, i) => {
                           const color = IMPACT_COLORS[activity.impact_type] || 'bg-muted';
                           return (
                             <div
                               key={i}
-                              className={`w-1.5 h-1.5 rounded-full ${color}`}
+                              className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${color}`}
                             />
                           );
                         })}
                       </div>
 
                       {/* Completion Circle */}
-                      <div className="relative w-6 h-6">
-                        <svg className="w-6 h-6 transform -rotate-90">
+                      <div className="relative w-4 h-4 sm:w-6 sm:h-6">
+                        <svg className="w-full h-full transform -rotate-90">
                           <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
+                            cx="50%"
+                            cy="50%"
+                            r="40%"
                             stroke="currentColor"
                             strokeWidth="2"
                             fill="none"
                             className="opacity-20"
                           />
                           <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
+                            cx="50%"
+                            cy="50%"
+                            r="40%"
                             stroke="currentColor"
                             strokeWidth="2"
                             fill="none"
