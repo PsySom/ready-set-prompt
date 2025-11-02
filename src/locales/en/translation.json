@@ -98,12 +98,53 @@
     "processSatisfaction": "Process satisfaction",
     "resultSatisfaction": "Result satisfaction",
     "save": "Save Entry",
+    "saving": "Saving...",
     "history": "Tracker History",
     "selectEmotions": "Select emotions you're feeling",
+    "intensity": "Intensity",
     "emotionCategories": {
       "positive": "Positive",
       "negative": "Negative",
       "neutral": "Neutral"
+    },
+    "moodLabels": {
+      "veryBad": "Very bad",
+      "bad": "Bad",
+      "neutral": "Neutral",
+      "good": "Good",
+      "great": "Great"
+    },
+    "energyLabels": {
+      "veryTired": "Very tired",
+      "tired": "Tired",
+      "neutral": "Neutral",
+      "energetic": "Energetic",
+      "veryEnergetic": "Very energetic"
+    },
+    "satisfactionLabels": {
+      "processQuestion": "How was the process?",
+      "resultQuestion": "Happy with results?"
+    },
+    "emotionsList": {
+      "sad": "Sad",
+      "anxious": "Anxious",
+      "fearful": "Fearful",
+      "angry": "Angry",
+      "shame": "Shame",
+      "guilt": "Guilt",
+      "calm": "Calm",
+      "curious": "Curious",
+      "surprised": "Surprised",
+      "joy": "Joy",
+      "happy": "Happy",
+      "inspired": "Inspired",
+      "grateful": "Grateful",
+      "content": "Content"
+    },
+    "toasts": {
+      "saved": "Entry saved!",
+      "savedDescription": "Your mood has been tracked successfully.",
+      "errorSaving": "Error saving entry"
     }
   },
   "activities": {

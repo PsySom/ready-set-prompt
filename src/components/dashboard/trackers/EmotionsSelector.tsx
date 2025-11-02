@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface Emotion {
   label: string;
@@ -14,24 +15,26 @@ interface EmotionsSelectorProps {
   onChange: (emotions: Array<{ label: string; intensity: number; category: string }>) => void;
 }
 
-const emotions: Emotion[] = [
-  { label: 'Sad', emoji: '😢', category: 'negative' },
-  { label: 'Anxious', emoji: '😰', category: 'negative' },
-  { label: 'Fearful', emoji: '😨', category: 'negative' },
-  { label: 'Angry', emoji: '😠', category: 'negative' },
-  { label: 'Shame', emoji: '😳', category: 'negative' },
-  { label: 'Guilt', emoji: '😔', category: 'negative' },
-  { label: 'Calm', emoji: '😌', category: 'neutral' },
-  { label: 'Curious', emoji: '🤔', category: 'neutral' },
-  { label: 'Surprised', emoji: '😮', category: 'neutral' },
-  { label: 'Joy', emoji: '😊', category: 'positive' },
-  { label: 'Happy', emoji: '😄', category: 'positive' },
-  { label: 'Inspired', emoji: '✨', category: 'positive' },
-  { label: 'Grateful', emoji: '🙏', category: 'positive' },
-  { label: 'Content', emoji: '😌', category: 'positive' },
-];
-
 const EmotionsSelector = ({ selectedEmotions, onChange }: EmotionsSelectorProps) => {
+  const { t } = useTranslation();
+  
+  const emotions: Emotion[] = [
+    { label: t('trackers.emotionsList.sad'), emoji: '😢', category: 'negative' },
+    { label: t('trackers.emotionsList.anxious'), emoji: '😰', category: 'negative' },
+    { label: t('trackers.emotionsList.fearful'), emoji: '😨', category: 'negative' },
+    { label: t('trackers.emotionsList.angry'), emoji: '😠', category: 'negative' },
+    { label: t('trackers.emotionsList.shame'), emoji: '😳', category: 'negative' },
+    { label: t('trackers.emotionsList.guilt'), emoji: '😔', category: 'negative' },
+    { label: t('trackers.emotionsList.calm'), emoji: '😌', category: 'neutral' },
+    { label: t('trackers.emotionsList.curious'), emoji: '🤔', category: 'neutral' },
+    { label: t('trackers.emotionsList.surprised'), emoji: '😮', category: 'neutral' },
+    { label: t('trackers.emotionsList.joy'), emoji: '😊', category: 'positive' },
+    { label: t('trackers.emotionsList.happy'), emoji: '😄', category: 'positive' },
+    { label: t('trackers.emotionsList.inspired'), emoji: '✨', category: 'positive' },
+    { label: t('trackers.emotionsList.grateful'), emoji: '🙏', category: 'positive' },
+    { label: t('trackers.emotionsList.content'), emoji: '😌', category: 'positive' },
+  ];
+  
   const toggleEmotion = (emotion: Emotion) => {
     const existing = selectedEmotions.find((e) => e.label === emotion.label);
     
@@ -68,7 +71,7 @@ const EmotionsSelector = ({ selectedEmotions, onChange }: EmotionsSelectorProps)
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">Emotions</Label>
+      <Label className="text-base font-semibold">{t('trackers.emotions')}</Label>
 
       <div className="flex flex-wrap gap-2">
         {emotions.map((emotion) => {
@@ -100,7 +103,7 @@ const EmotionsSelector = ({ selectedEmotions, onChange }: EmotionsSelectorProps)
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{emotion.label}</span>
                 <span className="text-sm text-muted-foreground">
-                  Intensity: {emotion.intensity}/10
+                  {t('trackers.intensity')}: {emotion.intensity}/10
                 </span>
               </div>
               <Slider

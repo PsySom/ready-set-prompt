@@ -1,20 +1,23 @@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useTranslation } from 'react-i18next';
 
 interface MoodSliderProps {
   value: number;
   onChange: (value: number) => void;
 }
 
-const moods = [
-  { value: -5, emoji: '😢', label: 'Very bad' },
-  { value: -3, emoji: '😟', label: 'Bad' },
-  { value: 0, emoji: '😐', label: 'Neutral' },
-  { value: 3, emoji: '🙂', label: 'Good' },
-  { value: 5, emoji: '😄', label: 'Great' },
-];
-
 const MoodSlider = ({ value, onChange }: MoodSliderProps) => {
+  const { t } = useTranslation();
+  
+  const moods = [
+    { value: -5, emoji: '😢', label: t('trackers.moodLabels.veryBad') },
+    { value: -3, emoji: '😟', label: t('trackers.moodLabels.bad') },
+    { value: 0, emoji: '😐', label: t('trackers.moodLabels.neutral') },
+    { value: 3, emoji: '🙂', label: t('trackers.moodLabels.good') },
+    { value: 5, emoji: '😄', label: t('trackers.moodLabels.great') },
+  ];
+  
   const getColor = (val: number) => {
     const normalized = (val + 5) / 10; // 0 to 1
     const hue = normalized * 120; // 0 (red) to 120 (green)
@@ -26,7 +29,7 @@ const MoodSlider = ({ value, onChange }: MoodSliderProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-semibold">Mood</Label>
+        <Label className="text-base font-semibold">{t('trackers.mood')}</Label>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{currentMood.emoji}</span>
           <span className="text-sm text-muted-foreground">{currentMood.label}</span>

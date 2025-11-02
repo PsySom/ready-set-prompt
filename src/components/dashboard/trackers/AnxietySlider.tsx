@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useTranslation } from 'react-i18next';
 
 interface AnxietySliderProps {
   value: number;
@@ -7,6 +8,8 @@ interface AnxietySliderProps {
 }
 
 const AnxietySlider = ({ value, onChange }: AnxietySliderProps) => {
+  const { t } = useTranslation();
+  
   const getEmoji = (val: number) => {
     if (val <= 2) return '😊';
     if (val <= 4) return '🙂';
@@ -24,7 +27,7 @@ const AnxietySlider = ({ value, onChange }: AnxietySliderProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-semibold">Anxiety</Label>
+        <Label className="text-base font-semibold">{t('trackers.anxiety')}</Label>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{getEmoji(value)}</span>
           <span className="text-sm text-muted-foreground">{value}/10</span>

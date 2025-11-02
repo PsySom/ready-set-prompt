@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useTranslation } from 'react-i18next';
 
 interface EnergySliderProps {
   value: number;
@@ -7,6 +8,8 @@ interface EnergySliderProps {
 }
 
 const EnergySlider = ({ value, onChange }: EnergySliderProps) => {
+  const { t } = useTranslation();
+  
   const getEmoji = (val: number) => {
     if (val <= -3) return '😴';
     if (val <= -1) return '😪';
@@ -16,11 +19,11 @@ const EnergySlider = ({ value, onChange }: EnergySliderProps) => {
   };
 
   const getLabel = (val: number) => {
-    if (val <= -3) return 'Very tired';
-    if (val <= -1) return 'Tired';
-    if (val <= 1) return 'Neutral';
-    if (val <= 3) return 'Energetic';
-    return 'Very energetic';
+    if (val <= -3) return t('trackers.energyLabels.veryTired');
+    if (val <= -1) return t('trackers.energyLabels.tired');
+    if (val <= 1) return t('trackers.energyLabels.neutral');
+    if (val <= 3) return t('trackers.energyLabels.energetic');
+    return t('trackers.energyLabels.veryEnergetic');
   };
 
   const getColor = (val: number) => {
@@ -32,7 +35,7 @@ const EnergySlider = ({ value, onChange }: EnergySliderProps) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-base font-semibold">Energy</Label>
+        <Label className="text-base font-semibold">{t('trackers.energy')}</Label>
         <div className="flex items-center gap-2">
           <span className="text-2xl">{getEmoji(value)}</span>
           <span className="text-sm text-muted-foreground">{getLabel(value)}</span>
@@ -52,9 +55,9 @@ const EnergySlider = ({ value, onChange }: EnergySliderProps) => {
       />
 
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Very tired</span>
-        <span>Neutral</span>
-        <span>Very energetic</span>
+        <span>{t('trackers.energyLabels.veryTired')}</span>
+        <span>{t('trackers.energyLabels.neutral')}</span>
+        <span>{t('trackers.energyLabels.veryEnergetic')}</span>
       </div>
     </div>
   );

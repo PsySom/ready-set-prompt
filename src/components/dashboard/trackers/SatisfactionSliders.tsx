@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useTranslation } from 'react-i18next';
 
 interface SatisfactionSlidersProps {
   processValue: number;
@@ -14,6 +15,8 @@ const SatisfactionSliders = ({
   onProcessChange,
   onResultChange,
 }: SatisfactionSlidersProps) => {
+  const { t } = useTranslation();
+  
   const getEmoji = (val: number) => {
     if (val <= 2) return '😔';
     if (val <= 4) return '😐';
@@ -27,8 +30,8 @@ const SatisfactionSliders = ({
       {/* Process Satisfaction */}
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-semibold">Process Satisfaction</Label>
-          <p className="text-xs text-muted-foreground mt-1">How was the process?</p>
+          <Label className="text-base font-semibold">{t('trackers.processSatisfaction')}</Label>
+          <p className="text-xs text-muted-foreground mt-1">{t('trackers.satisfactionLabels.processQuestion')}</p>
         </div>
         
         <div className="flex items-center justify-between">
@@ -49,8 +52,8 @@ const SatisfactionSliders = ({
       {/* Result Satisfaction */}
       <div className="space-y-4">
         <div>
-          <Label className="text-base font-semibold">Result Satisfaction</Label>
-          <p className="text-xs text-muted-foreground mt-1">Happy with results?</p>
+          <Label className="text-base font-semibold">{t('trackers.resultSatisfaction')}</Label>
+          <p className="text-xs text-muted-foreground mt-1">{t('trackers.satisfactionLabels.resultQuestion')}</p>
         </div>
         
         <div className="flex items-center justify-between">

@@ -13,6 +13,7 @@ import AnxietySlider from './trackers/AnxietySlider';
 import EnergySlider from './trackers/EnergySlider';
 import SatisfactionSliders from './trackers/SatisfactionSliders';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface QuickTrackerCardProps {
   onEntrySaved: () => void;
@@ -21,6 +22,7 @@ interface QuickTrackerCardProps {
 const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -83,8 +85,8 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
       }
 
       toast({
-        title: 'Entry saved!',
-        description: 'Your mood has been tracked successfully.',
+        title: t('trackers.toasts.saved'),
+        description: t('trackers.toasts.savedDescription'),
       });
 
       // Reset form
@@ -102,7 +104,7 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error saving entry',
+        title: t('trackers.toasts.errorSaving'),
         description: error.message,
       });
     } finally {
@@ -124,7 +126,7 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
         className="w-full p-6 flex items-center justify-between hover:bg-muted/50 smooth-transition"
       >
         <div className="text-left">
-          <h2 className="text-xl font-bold text-foreground">How are you feeling?</h2>
+          <h2 className="text-xl font-bold text-foreground">{t('trackers.title')}</h2>
           <p className="text-sm text-muted-foreground">{currentTime}</p>
         </div>
         {isExpanded ? (
@@ -183,10 +185,10 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {t('trackers.saving')}
               </>
             ) : (
-              'Save Entry'
+              t('trackers.save')
             )}
           </Button>
         </div>

@@ -98,12 +98,53 @@
     "processSatisfaction": "Satisfaction du processus",
     "resultSatisfaction": "Satisfaction du résultat",
     "save": "Enregistrer l'entrée",
+    "saving": "Enregistrement...",
     "history": "Historique du suivi",
     "selectEmotions": "Sélectionnez les émotions que vous ressentez",
+    "intensity": "Intensité",
     "emotionCategories": {
       "positive": "Positives",
       "negative": "Négatives",
       "neutral": "Neutres"
+    },
+    "moodLabels": {
+      "veryBad": "Très mauvais",
+      "bad": "Mauvais",
+      "neutral": "Neutre",
+      "good": "Bon",
+      "great": "Excellent"
+    },
+    "energyLabels": {
+      "veryTired": "Très fatigué",
+      "tired": "Fatigué",
+      "neutral": "Neutre",
+      "energetic": "Énergique",
+      "veryEnergetic": "Très énergique"
+    },
+    "satisfactionLabels": {
+      "processQuestion": "Comment s'est passé le processus?",
+      "resultQuestion": "Satisfait des résultats?"
+    },
+    "emotionsList": {
+      "sad": "Triste",
+      "anxious": "Anxieux",
+      "fearful": "Craintif",
+      "angry": "En colère",
+      "shame": "Honte",
+      "guilt": "Culpabilité",
+      "calm": "Calme",
+      "curious": "Curieux",
+      "surprised": "Surpris",
+      "joy": "Joie",
+      "happy": "Heureux",
+      "inspired": "Inspiré",
+      "grateful": "Reconnaissant",
+      "content": "Content"
+    },
+    "toasts": {
+      "saved": "Entrée enregistrée!",
+      "savedDescription": "Votre humeur a été suivie avec succès.",
+      "errorSaving": "Erreur lors de l'enregistrement"
     }
   },
   "activities": {
