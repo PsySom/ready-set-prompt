@@ -273,7 +273,7 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
                   onClick={() => setFormData({ ...formData, impact_type: type.value as typeof formData.impact_type })}
                   className="justify-start h-10 md:h-11 text-sm md:text-base transition-all hover-scale"
                 >
-                  <div className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full ${type.color} mr-2`} />
+                  <div className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full ${type.color} mr-2 shrink-0 ring-2 ring-border`} />
                   {t(`calendar.activityTypes.${type.value}`)}
                 </Button>
               ))}
