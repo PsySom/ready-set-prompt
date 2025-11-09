@@ -1483,6 +1483,947 @@ const sliderSize = useBreakpointValue({
    </motion.div>
    ```
 
+## 🎯 Детальное описание системы рекомендаций
+
+### Обзор функциональности
+
+Система рекомендаций - это интеллектуальный модуль, который анализирует данные трекеров благополучия и активностей пользователя для генерации персонализированных предложений по улучшению эмоционального состояния и формированию здоровых привычек. Система работает на основе правил (rule-based) и автоматически срабатывает при выполнении определённых условий.
+
+### 🏗️ Архитектура системы
+
+#### Основные компоненты
+
+1. **Edge Function `generate-recommendations`** - серверная функция для анализа и генерации
+2. **Таблица `recommendation_rules`** - правила для триггеров рекомендаций
+3. **Таблица `user_recommendations`** - персональные рекомендации для пользователей
+4. **Таблица `activity_templates`** - шаблоны активностей для рекомендаций
+5. **Frontend компоненты** - интерфейс для просмотра и взаимодействия
+
+#### Процесс работы системы
+
+```mermaid
+graph TD
+    A[Пользователь на странице Recommendations] --> B{Нажимает Refresh}
+    B --> C[Вызов Edge Function generate-recommendations]
+    C --> D[Получение данных трекеров за 7 дней]
+    C --> E[Получение активностей за 7 дней]
+    C --> F[Получение активных правил]
+    D --> G[Оценка условий правил]
+    E --> G
+    F --> G
+    G --> H{Правила сработали?}
+    H -->|Да| I[Генерация рекомендаций]
+    H -->|Нет| J[Возврат пустого списка]
+    I --> K[Удаление старых рекомендаций]
+    K --> L[Сохранение новых рекомендаций]
+    L --> M[Отображение на фронтенде]
+```
+
+### 🔧 Edge Function: generate-recommendations
+
+**Файл:** `supabase/functions/generate-recommendations/index.ts`
+
+#### Основная структура
+
+```typescript
+interface TriggerCondition {
+  type: 'tracker_threshold' | 'activity_deficit' | 'activity_absence';
+  // Для tracker_threshold:
+  metric?: string;           // mood_score, stress_level, anxiety_level, energy_level
+  operator?: string;         // >, <, >=, <=, =
+  value?: number;           // Пороговое значение
+  occurrences?: number;     // Количество раз превышения порога
+  period_hours?: number;    // Период проверки в часах
+  
+  // Для activity_deficit:
+  category?: string;        // Категория активности
+  target_hours?: number;    // Целевые часы в день
+  period_days?: number;     // Период проверки в днях
+  
+  // Для activity_absence:
+  category?: string;        // Категория активности
+  period_days?: number;     // Период отсутствия в днях
+}
+
+interface Rule {
+  id: string;
+  trigger_condition: TriggerCondition;
+  activity_template_ids: string[];  // Рекомендуемые активности
+  priority: number;                 // 1 = высокий, 2 = средний, 3+ = низкий
+  enabled: boolean;
+}
+```
+
+#### Алгоритм работы
+
+**1. Инициализация и получение данных**
+
+```typescript
+// 1. Получение текущего пользователя через JWT
+const { data: { user } } = await supabaseClient.auth.getUser();
+
+// 2. Получение записей трекеров за последние 7 дней
+const sevenDaysAgo = new Date();
+sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+const { data: trackerEntries } = await supabaseClient
+  .from('tracker_entries')
+  .select('*')
+  .eq('user_id', user.id)
+  .gte('entry_date', sevenDaysAgo.toISOString().split('T')[0])
+  .order('entry_date', { ascending: false });
+
+// 3. Получение активностей за последние 7 дней
+const { data: activities } = await supabaseClient
+  .from('activities')
+  .select('*')
+  .eq('user_id', user.id)
+  .gte('date', sevenDaysAgo.toISOString().split('T')[0])
+  .order('date', { ascending: false });
+
+// 4. Получение активных правил
+const { data: rules } = await supabaseClient
+  .from('recommendation_rules')
+  .select('*')
+  .eq('enabled', true);
+```
+
+**2. Оценка правил**
+
+Для каждого правила вызывается функция `evaluateRule()`, которая определяет, сработало ли условие:
+
+```typescript
+function evaluateRule(
+  rule: Rule,
+  trackerEntries: any[],
+  activities: any[]
+): boolean {
+  const condition = rule.trigger_condition;
+
+  switch (condition.type) {
+    case 'tracker_threshold':
+      return evaluateTrackerThreshold(condition, trackerEntries);
+    case 'activity_deficit':
+      return evaluateActivityDeficit(condition, activities);
+    case 'activity_absence':
+      return evaluateActivityAbsence(condition, activities);
+    default:
+      return false;
+  }
+}
+```
+
+### 📐 Алгоритмы оценки условий
+
+#### 1. Tracker Threshold (Пороговые значения трекеров)
+
+Проверяет, превысили ли показатели трекеров определённый порог N раз за заданный период.
+
+**Пример условия:**
+"Если стресс > 7 встречается 3 или более раз за последние 48 часов"
+
+**Алгоритм:**
+
+```typescript
+function evaluateTrackerThreshold(
+  condition: TriggerCondition,
+  trackerEntries: any[]
+): boolean {
+  const { metric, operator, value, occurrences, period_hours } = condition;
+
+  // 1. Определяем временное окно
+  const cutoffTime = new Date();
+  cutoffTime.setHours(cutoffTime.getHours() - period_hours);
+
+  // 2. Фильтруем записи в пределах периода
+  const recentEntries = trackerEntries.filter((entry) => {
+    const entryDate = new Date(`${entry.entry_date}T${entry.entry_time}`);
+    return entryDate >= cutoffTime && entry[metric] !== null;
+  });
+
+  // 3. Подсчитываем количество превышений порога
+  let count = 0;
+  for (const entry of recentEntries) {
+    const metricValue = entry[metric];
+    
+    // Проверяем условие в зависимости от оператора
+    if (operator === '>' && metricValue > value) count++;
+    else if (operator === '<' && metricValue < value) count++;
+    else if (operator === '>=' && metricValue >= value) count++;
+    else if (operator === '<=' && metricValue <= value) count++;
+    else if (operator === '=' && metricValue === value) count++;
+  }
+
+  // 4. Возвращаем true если превышено требуемое количество раз
+  return count >= occurrences;
+}
+```
+
+**Примеры правил:**
+
+```json
+{
+  "type": "tracker_threshold",
+  "metric": "stress_level",
+  "operator": ">",
+  "value": 7,
+  "occurrences": 3,
+  "period_hours": 48
+}
+// Значение: "Высокий стресс (>7) зафиксирован 3+ раз за 2 дня"
+```
+
+```json
+{
+  "type": "tracker_threshold",
+  "metric": "mood_score",
+  "operator": "<",
+  "value": -2,
+  "occurrences": 2,
+  "period_hours": 24
+}
+// Значение: "Плохое настроение (<-2) зафиксировано 2+ раз за сутки"
+```
+
+```json
+{
+  "type": "tracker_threshold",
+  "metric": "energy_level",
+  "operator": "<",
+  "value": 0,
+  "occurrences": 4,
+  "period_hours": 72
+}
+// Значение: "Низкая энергия (<0) зафиксирована 4+ раз за 3 дня"
+```
+
+#### 2. Activity Deficit (Дефицит активностей)
+
+Проверяет, получает ли пользователь достаточно определённого типа активностей.
+
+**Пример условия:**
+"Если физических активностей меньше 1 часа в день за последние 7 дней"
+
+**Алгоритм:**
+
+```typescript
+function evaluateActivityDeficit(
+  condition: TriggerCondition,
+  activities: any[]
+): boolean {
+  const { category, target_hours, period_days } = condition;
+
+  // 1. Определяем временное окно
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - period_days);
+
+  // 2. Фильтруем выполненные активности нужной категории
+  const relevantActivities = activities.filter((activity) => {
+    const activityDate = new Date(activity.date);
+    return (
+      activity.category === category &&
+      activityDate >= cutoffDate &&
+      activity.status === 'completed'  // Только выполненные!
+    );
+  });
+
+  // 3. Суммируем общее время
+  const totalMinutes = relevantActivities.reduce((sum, activity) => {
+    return sum + (activity.duration_minutes || 0);
+  }, 0);
+
+  const totalHours = totalMinutes / 60;
+  
+  // 4. Рассчитываем целевое значение (target_hours * количество дней)
+  const targetTotalHours = target_hours * period_days;
+
+  // 5. Проверяем дефицит
+  return totalHours < targetTotalHours;
+}
+```
+
+**Примеры правил:**
+
+```json
+{
+  "type": "activity_deficit",
+  "category": "physical",
+  "target_hours": 1,
+  "period_days": 7
+}
+// Значение: "Меньше 7 часов физической активности за неделю"
+// (1 час/день * 7 дней = 7 часов)
+```
+
+```json
+{
+  "type": "activity_deficit",
+  "category": "mental",
+  "target_hours": 0.5,
+  "period_days": 3
+}
+// Значение: "Меньше 1.5 часов ментальных активностей за 3 дня"
+```
+
+```json
+{
+  "type": "activity_deficit",
+  "category": "social",
+  "target_hours": 2,
+  "period_days": 7
+}
+// Значение: "Меньше 14 часов социальных активностей за неделю"
+```
+
+#### 3. Activity Absence (Отсутствие активностей)
+
+Проверяет, давно ли пользователь выполнял определённый тип активностей.
+
+**Пример условия:**
+"Если не было физических активностей последние 3 дня"
+
+**Алгоритм:**
+
+```typescript
+function evaluateActivityAbsence(
+  condition: TriggerCondition,
+  activities: any[]
+): boolean {
+  const { category, period_days } = condition;
+
+  // 1. Определяем временное окно
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - period_days);
+
+  // 2. Проверяем наличие хотя бы одной выполненной активности
+  const hasActivity = activities.some((activity) => {
+    const activityDate = new Date(activity.date);
+    return (
+      activity.category === category &&
+      activityDate >= cutoffDate &&
+      activity.status === 'completed'
+    );
+  });
+
+  // 3. Возвращаем true если активностей НЕТ (отсутствие)
+  return !hasActivity;
+}
+```
+
+**Примеры правил:**
+
+```json
+{
+  "type": "activity_absence",
+  "category": "physical",
+  "period_days": 3
+}
+// Значение: "Нет физических активностей последние 3 дня"
+```
+
+```json
+{
+  "type": "activity_absence",
+  "category": "rest",
+  "period_days": 1
+}
+// Значение: "Нет активностей отдыха вчера"
+```
+
+```json
+{
+  "type": "activity_absence",
+  "category": "hobby",
+  "period_days": 7
+}
+// Значение: "Нет хобби-активностей последнюю неделю"
+```
+
+### 🔄 Процесс генерации рекомендаций
+
+**3. Создание рекомендаций**
+
+После оценки всех правил система генерирует рекомендации:
+
+```typescript
+// 1. Удаление старых неиспользованных рекомендаций
+await supabaseClient
+  .from('user_recommendations')
+  .delete()
+  .eq('user_id', user.id)
+  .is('accepted', null)      // Не принятые
+  .eq('dismissed', false);   // Не отклонённые
+
+// 2. Создание новых рекомендаций
+const recommendations = [];
+const now = new Date();
+const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // +24 часа
+
+for (const rule of triggeredRules) {
+  for (const templateId of rule.activity_template_ids) {
+    recommendations.push({
+      user_id: user.id,
+      activity_template_id: templateId,
+      reason: generateReason(rule.trigger_condition),
+      priority: rule.priority,
+      accepted: null,
+      dismissed: false,
+      expires_at: expiresAt.toISOString(),
+    });
+  }
+}
+
+// 3. Сохранение в базу данных
+if (recommendations.length > 0) {
+  await supabaseClient
+    .from('user_recommendations')
+    .insert(recommendations);
+}
+```
+
+**4. Генерация текста причины**
+
+```typescript
+function generateReason(condition: TriggerCondition): string {
+  switch (condition.type) {
+    case 'tracker_threshold':
+      if (condition.metric === 'stress_level') 
+        return 'To help reduce stress';
+      if (condition.metric === 'anxiety_level') 
+        return 'To calm anxiety';
+      if (condition.metric === 'energy_level') 
+        return 'To boost your energy';
+      if (condition.metric === 'mood_score') 
+        return 'To lift your mood';
+      return 'For overall wellbeing';
+      
+    case 'activity_deficit':
+      if (condition.category === 'sleep') 
+        return 'You need more rest';
+      if (condition.category === 'physical') 
+        return 'To stay active';
+      return 'To maintain balance';
+      
+    case 'activity_absence':
+      if (condition.category === 'exercise') 
+        return 'To stay active';
+      if (condition.category === 'social') 
+        return 'Connect with others';
+      return 'To maintain your routine';
+      
+    default:
+      return 'For overall wellbeing';
+  }
+}
+```
+
+### 💾 Структура базы данных
+
+#### Таблица: recommendation_rules
+
+Хранит правила для автоматической генерации рекомендаций.
+
+```sql
+CREATE TABLE recommendation_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  trigger_condition JSONB NOT NULL,      -- Условие триггера
+  activity_template_ids UUID[] NOT NULL, -- Массив ID шаблонов
+  priority INTEGER DEFAULT 1,            -- 1=high, 2=medium, 3+=low
+  enabled BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- RLS: Правила доступны всем для чтения
+CREATE POLICY "Rules are viewable by everyone"
+  ON recommendation_rules FOR SELECT
+  USING (true);
+
+-- Индекс для быстрого поиска активных правил
+CREATE INDEX idx_recommendation_rules_enabled 
+  ON recommendation_rules(enabled) 
+  WHERE enabled = true;
+```
+
+**Пример записи правила:**
+
+```sql
+INSERT INTO recommendation_rules (trigger_condition, activity_template_ids, priority) VALUES
+(
+  '{
+    "type": "tracker_threshold",
+    "metric": "stress_level",
+    "operator": ">",
+    "value": 7,
+    "occurrences": 3,
+    "period_hours": 48
+  }'::jsonb,
+  ARRAY[
+    '550e8400-e29b-41d4-a716-446655440001'::uuid,  -- Meditation
+    '550e8400-e29b-41d4-a716-446655440002'::uuid   -- Deep Breathing
+  ],
+  1  -- High priority
+);
+```
+
+#### Таблица: user_recommendations
+
+Хранит персональные рекомендации для каждого пользователя.
+
+```sql
+CREATE TABLE user_recommendations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  activity_template_id UUID NOT NULL REFERENCES activity_templates(id),
+  reason TEXT NOT NULL,              -- Причина рекомендации
+  priority INTEGER DEFAULT 1,        -- Приоритет (1=high, 2=medium, 3+=low)
+  accepted BOOLEAN,                  -- true/false/null
+  dismissed BOOLEAN DEFAULT false,   -- Отклонена пользователем
+  created_at TIMESTAMPTZ DEFAULT now(),
+  expires_at TIMESTAMPTZ             -- Срок действия (обычно +24ч)
+);
+
+-- RLS политики
+ALTER TABLE user_recommendations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own recommendations"
+  ON user_recommendations FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own recommendations"
+  ON user_recommendations FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own recommendations"
+  ON user_recommendations FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own recommendations"
+  ON user_recommendations FOR DELETE
+  USING (auth.uid() = user_id);
+
+-- Индексы для производительности
+CREATE INDEX idx_user_recommendations_user_active 
+  ON user_recommendations(user_id, created_at DESC)
+  WHERE accepted IS NULL AND dismissed = false;
+
+CREATE INDEX idx_user_recommendations_priority 
+  ON user_recommendations(user_id, priority, created_at DESC);
+```
+
+**Жизненный цикл рекомендации:**
+
+```typescript
+// 1. Создание (при генерации)
+accepted: null,
+dismissed: false,
+expires_at: now + 24 hours
+
+// 2. Принятие (пользователь добавил в календарь)
+accepted: true,
+dismissed: false
+
+// 3. Отклонение (пользователь нажал "Dismiss")
+accepted: null,
+dismissed: true
+
+// 4. Истечение срока (автоматически)
+expires_at < now
+```
+
+### 🎯 Frontend интеграция
+
+#### Страница Recommendations
+
+**Компонент:** `src/pages/Recommendations.tsx`
+
+**Функциональность:**
+
+1. **Загрузка рекомендаций**
+
+```typescript
+const fetchRecommendations = async () => {
+  const { data } = await supabase
+    .from('user_recommendations')
+    .select(`
+      *,
+      activity_templates (*)
+    `)
+    .eq('user_id', user?.id)
+    .is('accepted', null)        // Только неиспользованные
+    .eq('dismissed', false)       // Не отклонённые
+    .order('priority', { ascending: true })  // Сначала высокий приоритет
+    .order('created_at', { ascending: false });
+
+  setRecommendations(data);
+};
+```
+
+2. **Генерация новых рекомендаций**
+
+```typescript
+const generateRecommendations = async () => {
+  setGenerating(true);
+  
+  // Вызов Edge Function
+  const { error } = await supabase.functions.invoke('generate-recommendations');
+  
+  if (!error) {
+    toast.success('Recommendations updated');
+    await fetchRecommendations();
+  }
+  
+  setGenerating(false);
+};
+```
+
+3. **Добавление в календарь (Quick Add)**
+
+```typescript
+const handleAddToToday = async (rec: Recommendation) => {
+  const today = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const startTime = `${now.getHours()}:${now.getMinutes()}`;
+
+  // Создаём активность на сегодня
+  await supabase.from('activities').insert({
+    user_id: user.id,
+    title: rec.activity_templates.name,
+    category: rec.activity_templates.category,
+    impact_type: rec.activity_templates.impact_type,
+    date: today,
+    start_time: startTime,
+    duration_minutes: rec.activity_templates.default_duration_minutes,
+    status: 'planned',
+    template_id: rec.activity_template_id,
+  });
+
+  // Отмечаем рекомендацию как принятую
+  await supabase
+    .from('user_recommendations')
+    .update({ accepted: true })
+    .eq('id', rec.id);
+
+  toast.success('Activity added to today');
+};
+```
+
+4. **Планирование (Schedule)**
+
+```typescript
+const handleSchedule = async (rec: Recommendation) => {
+  // Отмечаем как принятую
+  await supabase
+    .from('user_recommendations')
+    .update({ accepted: true })
+    .eq('id', rec.id);
+
+  // Переходим на календарь с предзаполненным шаблоном
+  navigate('/calendar', { 
+    state: { templateId: rec.activity_template_id } 
+  });
+};
+```
+
+5. **Отклонение рекомендации**
+
+```typescript
+const handleDismiss = async (recId: string) => {
+  await supabase
+    .from('user_recommendations')
+    .update({ dismissed: true })
+    .eq('id', recId);
+
+  setRecommendations(recommendations.filter(r => r.id !== recId));
+  toast.success('Recommendation dismissed');
+};
+```
+
+#### Группировка по приоритетам
+
+```typescript
+const groupedRecs = {
+  high: recommendations.filter(r => r.priority === 1),
+  medium: recommendations.filter(r => r.priority === 2),
+  low: recommendations.filter(r => r.priority >= 3),
+};
+
+// Отображение с разделением на секции
+<>
+  {groupedRecs.high.length > 0 && (
+    <Section title="High Priority" items={groupedRecs.high} />
+  )}
+  {groupedRecs.medium.length > 0 && (
+    <Section title="Medium Priority" items={groupedRecs.medium} />
+  )}
+  {groupedRecs.low.length > 0 && (
+    <Section title="Suggestions" items={groupedRecs.low} />
+  )}
+</>
+```
+
+### 🎨 UI/UX особенности
+
+#### Визуальные индикаторы
+
+```typescript
+// Цветовая кодировка приоритетов
+const getPriorityLabel = (priority: number) => {
+  if (priority === 1) return { 
+    label: 'High', 
+    color: 'bg-destructive text-destructive-foreground' 
+  };
+  if (priority === 2) return { 
+    label: 'Medium', 
+    color: 'bg-warning text-warning-foreground' 
+  };
+  return { 
+    label: 'Low', 
+    color: 'bg-muted text-muted-foreground' 
+  };
+};
+
+// Цвета типов влияния
+const getImpactColor = (impact: string) => {
+  switch (impact) {
+    case 'positive': return 'text-success';
+    case 'negative': return 'text-destructive';
+    case 'neutral': return 'text-muted-foreground';
+    default: return 'text-warning';
+  }
+};
+```
+
+#### Alert для критичных рекомендаций
+
+```tsx
+{hasHighPriority && (
+  <Card className="p-4 bg-destructive/10 border-destructive/20">
+    <div className="flex items-start gap-3">
+      <AlertCircle className="h-5 w-5 text-destructive" />
+      <div>
+        <h3 className="font-semibold">Attention Needed</h3>
+        <p className="text-sm text-muted-foreground">
+          High priority recommendations detected. 
+          Consider taking action soon.
+        </p>
+      </div>
+    </div>
+  </Card>
+)}
+```
+
+### 🔄 Автоматизация и триггеры
+
+#### Ручная генерация
+
+Пользователь может вручную запросить генерацию рекомендаций нажав кнопку "Refresh":
+
+```typescript
+<Button onClick={generateRecommendations} disabled={generating}>
+  <RefreshCw className={generating ? 'animate-spin' : ''} />
+  Check for Recommendations
+</Button>
+```
+
+#### Автоматическая генерация (будущая функциональность)
+
+Можно настроить автоматическую генерацию через Supabase Cron Jobs:
+
+```sql
+-- Ежедневная генерация рекомендаций для всех пользователей
+SELECT cron.schedule(
+  'generate-daily-recommendations',
+  '0 6 * * *',  -- Каждый день в 6:00 UTC
+  $$
+  SELECT net.http_post(
+    url := 'https://[project-ref].supabase.co/functions/v1/generate-recommendations',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || current_setting('app.service_role_key')
+    ),
+    body := jsonb_build_object('batch', true)
+  ) FROM auth.users;
+  $$
+);
+```
+
+### 📊 Примеры комплексных правил
+
+#### Правило 1: Высокий стресс + отсутствие отдыха
+
+```json
+{
+  "id": "rule-001",
+  "trigger_condition": {
+    "type": "tracker_threshold",
+    "metric": "stress_level",
+    "operator": ">",
+    "value": 7,
+    "occurrences": 3,
+    "period_hours": 48
+  },
+  "activity_template_ids": [
+    "meditation-uuid",
+    "deep-breathing-uuid",
+    "yoga-uuid"
+  ],
+  "priority": 1,
+  "enabled": true
+}
+```
+
+**Логика:** Если стресс > 7 встретился 3+ раз за 2 дня → рекомендуем медитацию, дыхательные упражнения, йогу с высоким приоритетом.
+
+#### Правило 2: Дефицит физической активности
+
+```json
+{
+  "id": "rule-002",
+  "trigger_condition": {
+    "type": "activity_deficit",
+    "category": "physical",
+    "target_hours": 1,
+    "period_days": 7
+  },
+  "activity_template_ids": [
+    "running-uuid",
+    "gym-uuid",
+    "cycling-uuid"
+  ],
+  "priority": 2,
+  "enabled": true
+}
+```
+
+**Логика:** Если физических активностей < 7 часов за неделю → рекомендуем бег, тренажёрный зал, велоспорт со средним приоритетом.
+
+#### Правило 3: Отсутствие социальных активностей
+
+```json
+{
+  "id": "rule-003",
+  "trigger_condition": {
+    "type": "activity_absence",
+    "category": "social",
+    "period_days": 5
+  },
+  "activity_template_ids": [
+    "meet-friends-uuid",
+    "family-time-uuid",
+    "group-activity-uuid"
+  ],
+  "priority": 2,
+  "enabled": true
+}
+```
+
+**Логика:** Если нет социальных активностей 5+ дней → рекомендуем встречи с друзьями, семейное время, групповые активности.
+
+#### Правило 4: Низкая энергия по утрам
+
+```json
+{
+  "id": "rule-004",
+  "trigger_condition": {
+    "type": "tracker_threshold",
+    "metric": "energy_level",
+    "operator": "<",
+    "value": -2,
+    "occurrences": 3,
+    "period_hours": 72
+  },
+  "activity_template_ids": [
+    "morning-walk-uuid",
+    "healthy-breakfast-uuid",
+    "power-nap-uuid"
+  ],
+  "priority": 2,
+  "enabled": true
+}
+```
+
+**Логика:** Если низкая энергия (< -2) встретилась 3+ раз за 3 дня → рекомендуем утреннюю прогулку, здоровый завтрак, энергетическую дрёмоту.
+
+### 🔐 Безопасность
+
+1. **Аутентификация**
+   - Edge Function проверяет JWT токен
+   - Все операции выполняются от имени аутентифицированного пользователя
+
+2. **Row Level Security**
+   - Пользователи видят только свои рекомендации
+   - Невозможно получить рекомендации другого пользователя
+
+3. **Валидация данных**
+   - Проверка корректности условий правил
+   - Валидация существования activity_templates
+
+### 🚀 Производительность и оптимизация
+
+1. **Кэширование правил**
+   ```typescript
+   // Правила редко меняются, можно кэшировать на 1 час
+   const { data: rules } = useQuery({
+     queryKey: ['recommendation-rules'],
+     queryFn: fetchRules,
+     staleTime: 60 * 60 * 1000,
+   });
+   ```
+
+2. **Батч-обработка**
+   ```typescript
+   // Удаление и создание рекомендаций одной транзакцией
+   await supabaseClient.rpc('replace_recommendations', {
+     p_user_id: user.id,
+     p_recommendations: recommendations
+   });
+   ```
+
+3. **Индексы для быстрых запросов**
+   ```sql
+   -- Для быстрого поиска активных рекомендаций
+   CREATE INDEX idx_user_recs_active 
+     ON user_recommendations(user_id, priority)
+     WHERE accepted IS NULL AND dismissed = false;
+   ```
+
+4. **Ограничение количества**
+   ```typescript
+   // Не более 10 рекомендаций на пользователя
+   const MAX_RECOMMENDATIONS = 10;
+   const topRecommendations = recommendations
+     .slice(0, MAX_RECOMMENDATIONS);
+   ```
+
+### 📈 Метрики и аналитика
+
+Можно отслеживать эффективность рекомендаций:
+
+```sql
+-- Процент принятия рекомендаций
+SELECT 
+  COUNT(*) FILTER (WHERE accepted = true) * 100.0 / COUNT(*) as acceptance_rate
+FROM user_recommendations
+WHERE user_id = $1;
+
+-- Самые популярные шаблоны
+SELECT 
+  activity_template_id,
+  COUNT(*) as recommendation_count,
+  COUNT(*) FILTER (WHERE accepted = true) as accepted_count
+FROM user_recommendations
+GROUP BY activity_template_id
+ORDER BY accepted_count DESC;
+
+-- Эффективность правил
+SELECT 
+  r.id as rule_id,
+  COUNT(ur.id) as total_recommendations,
+  COUNT(ur.id) FILTER (WHERE ur.accepted = true) as accepted_count
+FROM recommendation_rules r
+LEFT JOIN user_recommendations ur ON ur.reason LIKE '%' || r.id || '%'
+GROUP BY r.id;
+```
+
 ## 📦 Установка и запуск
 
 ### Требования
