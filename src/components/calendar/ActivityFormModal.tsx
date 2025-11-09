@@ -53,8 +53,8 @@ const CATEGORIES = [
 const IMPACT_TYPES = [
   { value: 'positive', label: 'Positive', color: 'bg-green-500' },
   { value: 'negative', label: 'Negative', color: 'bg-red-500' },
-  { value: 'neutral', label: 'Neutral', color: 'bg-gray-400' },
-  { value: 'mixed', label: 'Mixed', color: 'bg-yellow-500' }
+  { value: 'neutral', label: 'Neutral', color: 'bg-orange-500' },
+  { value: 'mixed', label: 'Mixed', color: 'bg-blue-500' }
 ];
 
 export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }: ActivityFormModalProps) => {
