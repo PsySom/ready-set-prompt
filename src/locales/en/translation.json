@@ -449,6 +449,8 @@
     "subtitle": "Guided exercises for mental wellness",
     "start": "Start Exercise",
     "startExercise": "Start Exercise",
+    "schedule": "Schedule",
+    "minutes": "min",
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",

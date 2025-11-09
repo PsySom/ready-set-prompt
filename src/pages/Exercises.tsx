@@ -5,12 +5,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Clock, Search, ChevronRight } from 'lucide-react';
+import { Clock, Search, ChevronRight, CalendarPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
+import { ActivityFormModal } from '@/components/calendar/ActivityFormModal';
 
 interface Exercise {
   id: string;
@@ -29,9 +30,36 @@ const Exercises = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+  const [activityModalOpen, setActivityModalOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getLocalizedField } = useLocale();
+
+  const handleScheduleExercise = (exercise: Exercise, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedExercise(exercise);
+    setActivityModalOpen(true);
+  };
+
+  const getPrefilledActivity = () => {
+    if (!selectedExercise) return undefined;
+    
+    return {
+      title: getLocalizedField(selectedExercise, 'name'),
+      duration_minutes: selectedExercise.duration_minutes,
+      impact_type: 'restorative',
+      category: 'practice',
+      description: '',
+      date: new Date(),
+      anytime: true,
+      start_time: '09:00',
+      is_recurring: false,
+      recurrence_pattern: { type: 'none' as const },
+      reminder_enabled: false,
+      reminder_minutes_before: 15
+    };
+  };
 
   useEffect(() => {
     loadExercises();
@@ -170,16 +198,33 @@ const Exercises = () => {
                     ))}
                   </div>
 
-                  <Button className="w-full hover-scale transition-all" size="default">
-                    {t('exercises.start')}
-                    <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1 hover-scale transition-all" 
+                      size="default"
+                      onClick={(e) => handleScheduleExercise(exercise, e)}
+                    >
+                      <CalendarPlus className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                      {t('exercises.schedule')}
+                    </Button>
+                    <Button className="flex-1 hover-scale transition-all" size="default">
+                      {t('exercises.start')}
+                      <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))
           )}
         </div>
       </div>
+
+      <ActivityFormModal
+        open={activityModalOpen}
+        onOpenChange={setActivityModalOpen}
+        activity={getPrefilledActivity()}
+      />
     </AppLayout>
   );
 };

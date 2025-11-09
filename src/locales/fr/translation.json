@@ -449,6 +449,8 @@
     "subtitle": "Exercices guidés pour le bien-être mental",
     "start": "Commencer l'exercice",
     "startExercise": "Commencer l'exercice",
+    "schedule": "Planifier",
+    "minutes": "min",
     "difficulty": {
       "easy": "Facile",
       "medium": "Moyen",
