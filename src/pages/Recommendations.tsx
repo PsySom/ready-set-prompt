@@ -168,10 +168,11 @@ const Recommendations = () => {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'positive': return 'text-success';
-      case 'negative': return 'text-destructive';
-      case 'neutral': return 'text-muted-foreground';
-      default: return 'text-warning';
+      case 'restorative': return 'text-green-600 dark:text-green-400';
+      case 'draining': return 'text-red-600 dark:text-red-400';
+      case 'neutral': return 'text-orange-600 dark:text-orange-400';
+      case 'mixed': return 'text-blue-600 dark:text-blue-400';
+      default: return 'text-muted-foreground';
     }
   };
 

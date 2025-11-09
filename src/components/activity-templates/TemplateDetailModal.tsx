@@ -43,11 +43,17 @@ const getImpactInfo = (impactType: string) => {
         description: 'Requires energy',
         color: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
       };
+    case 'neutral':
+      return {
+        label: 'Neutral',
+        description: 'Balanced effect',
+        color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+      };
     case 'mixed':
       return {
         label: 'Mixed',
         description: 'Challenging but rewarding',
-        color: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+        color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
       };
     default:
       return {

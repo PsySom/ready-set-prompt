@@ -102,16 +102,16 @@ const TodayActivitiesCard = () => {
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'positive':
-        return 'bg-accent';
-      case 'negative':
-        return 'bg-destructive';
+      case 'restorative':
+        return 'bg-green-500';
+      case 'draining':
+        return 'bg-red-500';
       case 'neutral':
-        return 'bg-muted';
+        return 'bg-orange-500';
       case 'mixed':
-        return 'bg-warning';
+        return 'bg-blue-500';
       default:
-        return 'bg-muted';
+        return 'bg-orange-500';
     }
   };
 
