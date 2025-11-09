@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, FileText, History } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 interface Test {
   id: string;
@@ -28,6 +29,7 @@ interface Test {
 const TestDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [test, setTest] = useState<Test | null>(null);
   const [hasHistory, setHasHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -87,9 +89,9 @@ const TestDetail = () => {
     return (
       <AppLayout>
         <div className="p-6 text-center">
-          <p className="text-muted-foreground">Test not found</p>
+          <p className="text-muted-foreground">{t('testDetail.testNotFound')}</p>
           <Button onClick={() => navigate('/tests')} className="mt-4">
-            Back to Tests
+            {t('testDetail.backToTests')}
           </Button>
         </div>
       </AppLayout>
@@ -129,15 +131,15 @@ const TestDetail = () => {
 
         {/* What it Measures */}
         <Card className="p-6 space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">What This Test Measures</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('testDetail.whatItMeasures')}</h3>
           <p className="text-sm text-muted-foreground">
-            This assessment helps evaluate your current state and provides insights based on validated psychological scales.
+            {t('testDetail.whatItMeasuresDescription')}
           </p>
         </Card>
 
         {/* Result Categories */}
         <Card className="p-6 space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">Result Categories</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('testDetail.resultCategories')}</h3>
           <div className="space-y-2">
             {test.scoring_info.ranges.map((range, index) => (
               <div
@@ -146,7 +148,7 @@ const TestDetail = () => {
               >
                 <span className="font-medium">{range.label}</span>
                 <Badge variant="outline">
-                  {range.min}-{range.max} points
+                  {range.min}-{range.max} {t('testDetail.points')}
                 </Badge>
               </div>
             ))}
@@ -156,7 +158,7 @@ const TestDetail = () => {
         {/* Actions */}
         <div className="flex gap-3">
           <Button onClick={startTest} size="lg" className="flex-1">
-            Start Test
+            {t('testDetail.startTest')}
           </Button>
           {hasHistory && (
             <Button
@@ -165,14 +167,14 @@ const TestDetail = () => {
               onClick={() => navigate(`/tests/${slug}/history`)}
             >
               <History className="h-4 w-4 mr-2" />
-              View History
+              {t('testDetail.viewHistory')}
             </Button>
           )}
         </div>
 
         {/* Privacy Note */}
         <p className="text-xs text-muted-foreground text-center">
-          Your responses are private and stored securely. This test is for self-assessment purposes and does not constitute medical advice.
+          {t('testDetail.privacyNote')}
         </p>
       </div>
     </AppLayout>

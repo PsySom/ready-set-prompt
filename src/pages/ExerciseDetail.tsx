@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, Play, Calendar, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Exercise {
   id: string;
@@ -31,6 +32,7 @@ const ExerciseDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,14 +79,14 @@ const ExerciseDetail = () => {
   const handleShare = () => {
     const url = `${window.location.origin}/exercises/${slug}`;
     navigator.clipboard.writeText(url);
-    toast({ title: 'Link copied to clipboard' });
+    toast({ title: t('exerciseDetail.linkCopied') });
   };
 
   const getDifficultyLabel = (difficulty: string) => {
     const labels: { [key: string]: string } = {
-      easy: 'Beginner-friendly',
-      medium: 'Moderate experience helpful',
-      hard: 'Advanced practice'
+      easy: t('exerciseDetail.difficulty.easy'),
+      medium: t('exerciseDetail.difficulty.medium'),
+      hard: t('exerciseDetail.difficulty.hard')
     };
     return labels[difficulty] || difficulty;
   };
@@ -105,9 +107,9 @@ const ExerciseDetail = () => {
     return (
       <AppLayout>
         <div className="p-6 text-center">
-          <p className="text-muted-foreground">Exercise not found</p>
+          <p className="text-muted-foreground">{t('exerciseDetail.exerciseNotFound')}</p>
           <Button onClick={() => navigate('/exercises')} className="mt-4">
-            Back to Exercises
+            {t('exerciseDetail.backToExercises')}
           </Button>
         </div>
       </AppLayout>
@@ -154,7 +156,7 @@ const ExerciseDetail = () => {
         {/* Effects */}
         <Card className="p-6 space-y-3">
           <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            ✨ What This Helps With
+            ✨ {t('exerciseDetail.whatThisHelps')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {exercise.effects.map((effect, i) => (
@@ -167,9 +169,12 @@ const ExerciseDetail = () => {
 
         {/* Instructions Preview */}
         <Card className="p-6 space-y-3">
-          <h3 className="text-lg font-semibold text-foreground">How It Works</h3>
+          <h3 className="text-lg font-semibold text-foreground">{t('exerciseDetail.howItWorks')}</h3>
           <p className="text-sm text-muted-foreground">
-            {exercise.instructions.length} steps • Approximately {Math.ceil(exercise.duration_minutes / exercise.instructions.length)} minutes per step
+            {t('exerciseDetail.stepsInfo', { 
+              count: exercise.instructions.length,
+              minutes: Math.ceil(exercise.duration_minutes / exercise.instructions.length)
+            })}
           </p>
           <div className="space-y-2">
             {exercise.instructions.map((instruction, i) => (
@@ -189,7 +194,7 @@ const ExerciseDetail = () => {
         <div className="space-y-3">
           <Button onClick={handleStart} size="lg" className="w-full">
             <Play className="h-5 w-5 mr-2" />
-            Start Exercise
+            {t('exerciseDetail.startExercise')}
           </Button>
           
           <div className="flex gap-3">
@@ -200,7 +205,7 @@ const ExerciseDetail = () => {
               className="flex-1"
             >
               <Calendar className="h-4 w-4 mr-2" />
-              Add to Calendar
+              {t('exerciseDetail.addToCalendar')}
             </Button>
             <Button
               variant="outline"
@@ -208,14 +213,14 @@ const ExerciseDetail = () => {
               onClick={handleShare}
             >
               <Share2 className="h-4 w-4 mr-2" />
-              Share
+              {t('exerciseDetail.share')}
             </Button>
           </div>
         </div>
 
         {/* Note */}
         <p className="text-xs text-muted-foreground text-center">
-          Find a quiet, comfortable space. This exercise works best when you can focus without distractions.
+          {t('exerciseDetail.note')}
         </p>
       </div>
     </AppLayout>

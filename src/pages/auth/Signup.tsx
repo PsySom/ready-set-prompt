@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 const signupSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -18,6 +19,7 @@ const signupSchema = z.object({
 });
 
 const Signup = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -63,13 +65,13 @@ const Signup = () => {
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-sm space-y-8 animate-fade-in">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Create your account</h1>
-          <p className="text-muted-foreground">Start your mental wellness journey today</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t('auth.createYourAccount')}</h1>
+          <p className="text-muted-foreground">{t('auth.startJourney')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name (Optional)</Label>
+            <Label htmlFor="fullName">{t('auth.fullNameOptional')}</Label>
             <Input
               id="fullName"
               type="text"
@@ -81,7 +83,7 @@ const Signup = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -97,7 +99,7 @@ const Signup = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t('auth.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -110,11 +112,11 @@ const Signup = () => {
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password}</p>
             )}
-            <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
+            <p className="text-xs text-muted-foreground">{t('auth.passwordMinLength')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -137,18 +139,18 @@ const Signup = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                {t('auth.creatingAccount')}
               </>
             ) : (
-              'Create account'
+              t('auth.createAccount')
             )}
           </Button>
         </form>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
+          <span className="text-muted-foreground">{t('auth.alreadyHaveAccount')} </span>
           <Link to="/login" className="text-primary hover:underline font-medium">
-            Sign in
+            {t('auth.signIn')}
           </Link>
         </div>
       </div>

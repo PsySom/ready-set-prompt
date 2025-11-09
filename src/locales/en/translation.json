@@ -6,15 +6,30 @@
   "auth": {
     "login": "Login",
     "signup": "Sign Up",
+    "signIn": "Sign in",
     "email": "Email",
     "password": "Password",
     "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "fullNameOptional": "Full Name (Optional)",
     "forgotPassword": "Forgot password?",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "resetPassword": "Reset Password",
     "backToLogin": "Back to Login",
-    "checkEmail": "Check your email for a password reset link"
+    "checkEmail": "Check your email for a password reset link",
+    "createAccount": "Create account",
+    "creatingAccount": "Creating account...",
+    "createYourAccount": "Create your account",
+    "startJourney": "Start your mental wellness journey today",
+    "passwordMinLength": "Must be at least 8 characters",
+    "sendResetLink": "Send reset link",
+    "sendingLink": "Sending link...",
+    "resetPasswordTitle": "Reset your password",
+    "resetPasswordSubtitle": "Enter your email and we'll send you a reset link",
+    "checkEmailTitle": "Check your email",
+    "checkEmailMessage": "We've sent a password reset link to your email address.",
+    "returnToSignIn": "Return to sign in"
   },
   "onboarding": {
     "welcome": {
@@ -611,6 +626,86 @@
       "morning": "5:00-11:59",
       "day": "12:00-17:59",
       "evening": "18:00-23:59"
+    }
+  },
+  "testDetail": {
+    "backToTests": "Back to Tests",
+    "testNotFound": "Test not found",
+    "whatItMeasures": "What This Test Measures",
+    "whatItMeasuresDescription": "This assessment helps evaluate your current state and provides insights based on validated psychological scales.",
+    "resultCategories": "Result Categories",
+    "points": "points",
+    "startTest": "Start Test",
+    "viewHistory": "View History",
+    "privacyNote": "Your responses are private and stored securely. This test is for self-assessment purposes and does not constitute medical advice."
+  },
+  "exerciseDetail": {
+    "backToExercises": "Back to Exercises",
+    "exerciseNotFound": "Exercise not found",
+    "whatThisHelps": "What This Helps With",
+    "howItWorks": "How It Works",
+    "stepsInfo": "{{count}} steps • Approximately {{minutes}} minutes per step",
+    "startExercise": "Start Exercise",
+    "addToCalendar": "Add to Calendar",
+    "share": "Share",
+    "linkCopied": "Link copied to clipboard",
+    "note": "Find a quiet, comfortable space. This exercise works best when you can focus without distractions.",
+    "difficulty": {
+      "easy": "Beginner-friendly",
+      "medium": "Moderate experience helpful",
+      "hard": "Advanced practice"
+    }
+  },
+  "activityTemplates": {
+    "title": "Activity Templates",
+    "searchPlaceholder": "Search activities...",
+    "noTemplatesFound": "No templates found",
+    "addToToday": "Add to today",
+    "schedule": "Schedule",
+    "activityAdded": "Activity added to today!",
+    "activityAddFailed": "Failed to add activity",
+    "categories": {
+      "sleep": "Sleep & Rest",
+      "nutrition": "Nutrition",
+      "hydration": "Hydration",
+      "exercise": "Exercise",
+      "hobby": "Hobby",
+      "work": "Work",
+      "social": "Social",
+      "practice": "Practice",
+      "health": "Health",
+      "reflection": "Reflection",
+      "leisure": "Leisure"
+    },
+    "impact": {
+      "restorative": "Restorative",
+      "restorativeDesc": "Helps you recover energy",
+      "draining": "Draining",
+      "drainingDesc": "Requires energy",
+      "mixed": "Mixed",
+      "mixedDesc": "Challenging but rewarding",
+      "neutral": "Neutral",
+      "neutralDesc": "Balanced effect"
+    },
+    "category": "Category",
+    "impactType": "Impact Type",
+    "defaultDuration": "Default Duration"
+  },
+  "trackerHistory": {
+    "title": "Mood History",
+    "subtitle": "Track your mental wellness journey",
+    "export": "Export",
+    "back": "Back",
+    "exportSuccess": "Export successful",
+    "exportDescription": "Your data has been downloaded.",
+    "loadError": "Error loading history",
+    "noEntriesYet": "No entries yet",
+    "noEntriesDescription": "Start tracking your mood to see insights",
+    "startTracking": "Start Tracking",
+    "periods": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
     }
   }
 }

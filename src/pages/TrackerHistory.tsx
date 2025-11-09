@@ -15,6 +15,7 @@ import SatisfactionMetrics from '@/components/tracker-history/SatisfactionMetric
 import EntriesList from '@/components/tracker-history/EntriesList';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export type Period = 'day' | 'week' | 'month';
 
@@ -40,6 +41,7 @@ const TrackerHistory = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [period, setPeriod] = useState<Period>('week');
   const [entries, setEntries] = useState<TrackerEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +105,7 @@ const TrackerHistory = () => {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error loading history',
+        title: t('trackerHistory.loadError'),
         description: error.message,
       });
     } finally {
@@ -122,8 +124,8 @@ const TrackerHistory = () => {
     URL.revokeObjectURL(url);
 
     toast({
-      title: 'Export successful',
-      description: 'Your data has been downloaded.',
+      title: t('trackerHistory.exportSuccess'),
+      description: t('trackerHistory.exportDescription'),
     });
   };
 
@@ -140,26 +142,26 @@ const TrackerHistory = () => {
               className="pl-0 hover-scale transition-all"
             >
               <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              Back
+              {t('trackerHistory.back')}
             </Button>
 
             <Button variant="outline" size="default" onClick={handleExport} className="hover-scale transition-all self-start sm:self-auto">
               <Download className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-              Export
+              {t('trackerHistory.export')}
             </Button>
           </div>
 
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Mood History</h1>
-            <p className="text-sm md:text-base text-muted-foreground mt-2">Track your mental wellness journey</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t('trackerHistory.title')}</h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-2">{t('trackerHistory.subtitle')}</p>
           </div>
 
           {/* Period Selector */}
           <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
             <TabsList className="grid w-full max-w-md grid-cols-3">
-              <TabsTrigger value="day" className="text-sm md:text-base">Day</TabsTrigger>
-              <TabsTrigger value="week" className="text-sm md:text-base">Week</TabsTrigger>
-              <TabsTrigger value="month" className="text-sm md:text-base">Month</TabsTrigger>
+              <TabsTrigger value="day" className="text-sm md:text-base">{t('trackerHistory.periods.day')}</TabsTrigger>
+              <TabsTrigger value="week" className="text-sm md:text-base">{t('trackerHistory.periods.week')}</TabsTrigger>
+              <TabsTrigger value="month" className="text-sm md:text-base">{t('trackerHistory.periods.month')}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -175,10 +177,10 @@ const TrackerHistory = () => {
             <div className="space-y-4">
               <div className="text-6xl">📊</div>
               <div>
-                <h3 className="text-lg font-semibold text-foreground">No entries yet</h3>
-                <p className="text-muted-foreground">Start tracking your mood to see insights</p>
+                <h3 className="text-lg font-semibold text-foreground">{t('trackerHistory.noEntriesYet')}</h3>
+                <p className="text-muted-foreground">{t('trackerHistory.noEntriesDescription')}</p>
               </div>
-              <Button onClick={() => navigate('/dashboard')}>Start Tracking</Button>
+              <Button onClick={() => navigate('/dashboard')}>{t('trackerHistory.startTracking')}</Button>
             </div>
           </Card>
         ) : (

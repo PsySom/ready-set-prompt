@@ -6,15 +6,30 @@
   "auth": {
     "login": "Войти",
     "signup": "Регистрация",
-    "email": "Электронная почта",
+    "signIn": "Войти",
+    "email": "Email",
     "password": "Пароль",
     "confirmPassword": "Подтвердите пароль",
+    "fullName": "Полное имя",
+    "fullNameOptional": "Полное имя (необязательно)",
     "forgotPassword": "Забыли пароль?",
     "alreadyHaveAccount": "Уже есть аккаунт?",
     "dontHaveAccount": "Нет аккаунта?",
     "resetPassword": "Сбросить пароль",
-    "backToLogin": "Вернуться к входу",
-    "checkEmail": "Проверьте вашу почту для ссылки на сброс пароля"
+    "backToLogin": "Назад к входу",
+    "checkEmail": "Проверьте почту для ссылки сброса пароля",
+    "createAccount": "Создать аккаунт",
+    "creatingAccount": "Создание аккаунта...",
+    "createYourAccount": "Создайте свой аккаунт",
+    "startJourney": "Начните свой путь к психическому здоровью сегодня",
+    "passwordMinLength": "Минимум 8 символов",
+    "sendResetLink": "Отправить ссылку",
+    "sendingLink": "Отправка ссылки...",
+    "resetPasswordTitle": "Сбросьте ваш пароль",
+    "resetPasswordSubtitle": "Введите email и мы отправим вам ссылку для сброса",
+    "checkEmailTitle": "Проверьте почту",
+    "checkEmailMessage": "Мы отправили ссылку для сброса пароля на ваш email.",
+    "returnToSignIn": "Вернуться ко входу"
   },
   "onboarding": {
     "welcome": {
@@ -611,6 +626,86 @@
       "morning": "5:00-11:59",
       "day": "12:00-17:59",
       "evening": "18:00-23:59"
+    }
+  },
+  "testDetail": {
+    "backToTests": "Назад к тестам",
+    "testNotFound": "Тест не найден",
+    "whatItMeasures": "Что измеряет этот тест",
+    "whatItMeasuresDescription": "Эта оценка помогает оценить ваше текущее состояние и даёт представление на основе проверенных психологических шкал.",
+    "resultCategories": "Категории результатов",
+    "points": "баллов",
+    "startTest": "Начать тест",
+    "viewHistory": "Посмотреть историю",
+    "privacyNote": "Ваши ответы приватны и хранятся безопасно. Этот тест предназначен для самооценки и не является медицинской консультацией."
+  },
+  "exerciseDetail": {
+    "backToExercises": "Назад к упражнениям",
+    "exerciseNotFound": "Упражнение не найдено",
+    "whatThisHelps": "Чем это помогает",
+    "howItWorks": "Как это работает",
+    "stepsInfo": "{{count}} шагов • Примерно {{minutes}} минут на шаг",
+    "startExercise": "Начать упражнение",
+    "addToCalendar": "Добавить в календарь",
+    "share": "Поделиться",
+    "linkCopied": "Ссылка скопирована в буфер обмена",
+    "note": "Найдите тихое, комфортное место. Это упражнение работает лучше всего, когда вы можете сосредоточиться без отвлечений.",
+    "difficulty": {
+      "easy": "Подходит для начинающих",
+      "medium": "Полезен умеренный опыт",
+      "hard": "Продвинутая практика"
+    }
+  },
+  "activityTemplates": {
+    "title": "Шаблоны активностей",
+    "searchPlaceholder": "Поиск активностей...",
+    "noTemplatesFound": "Шаблоны не найдены",
+    "addToToday": "Добавить на сегодня",
+    "schedule": "Запланировать",
+    "activityAdded": "Активность добавлена на сегодня!",
+    "activityAddFailed": "Не удалось добавить активность",
+    "categories": {
+      "sleep": "Сон и отдых",
+      "nutrition": "Питание",
+      "hydration": "Гидратация",
+      "exercise": "Упражнения",
+      "hobby": "Хобби",
+      "work": "Работа",
+      "social": "Общение",
+      "practice": "Практика",
+      "health": "Здоровье",
+      "reflection": "Рефлексия",
+      "leisure": "Досуг"
+    },
+    "impact": {
+      "restorative": "Восстанавливающее",
+      "restorativeDesc": "Помогает восстановить энергию",
+      "draining": "Истощающее",
+      "drainingDesc": "Требует энергии",
+      "mixed": "Смешанное",
+      "mixedDesc": "Сложное, но полезное",
+      "neutral": "Нейтральное",
+      "neutralDesc": "Сбалансированный эффект"
+    },
+    "category": "Категория",
+    "impactType": "Тип воздействия",
+    "defaultDuration": "Длительность по умолчанию"
+  },
+  "trackerHistory": {
+    "title": "История настроения",
+    "subtitle": "Отслеживайте ваш путь к психическому благополучию",
+    "export": "Экспорт",
+    "back": "Назад",
+    "exportSuccess": "Экспорт успешен",
+    "exportDescription": "Ваши данные были загружены.",
+    "loadError": "Ошибка загрузки истории",
+    "noEntriesYet": "Пока нет записей",
+    "noEntriesDescription": "Начните отслеживать настроение, чтобы увидеть аналитику",
+    "startTracking": "Начать отслеживание",
+    "periods": {
+      "day": "День",
+      "week": "Неделя",
+      "month": "Месяц"
     }
   }
 }

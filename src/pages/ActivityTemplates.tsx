@@ -7,6 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import TemplateCard from '@/components/activity-templates/TemplateCard';
 import CategoryFilter from '@/components/activity-templates/CategoryFilter';
 import TemplateDetailModal from '@/components/activity-templates/TemplateDetailModal';
+import { useTranslation } from 'react-i18next';
 
 interface ActivityTemplate {
   id: string;
@@ -22,6 +23,7 @@ interface ActivityTemplate {
 }
 
 const ActivityTemplates = () => {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedTemplate, setSelectedTemplate] = useState<ActivityTemplate | null>(null);
@@ -51,12 +53,12 @@ const ActivityTemplates = () => {
     <AppLayout>
       <div className="space-y-6 lg:space-y-8 animate-fade-in">
         <div className="space-y-md lg:space-y-lg">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Activity Templates</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t('activityTemplates.title')}</h1>
           
           <div className="relative max-w-2xl">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search activities..."
+              placeholder={t('activityTemplates.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-12 text-base"
@@ -78,7 +80,7 @@ const ActivityTemplates = () => {
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">No templates found</p>
+              <p className="text-muted-foreground">{t('activityTemplates.noTemplatesFound')}</p>
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">

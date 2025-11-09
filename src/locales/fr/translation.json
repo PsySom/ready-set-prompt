@@ -4,17 +4,32 @@
     "tagline": "Votre compagnon personnel pour la santé mentale"
   },
   "auth": {
-    "login": "Se connecter",
+    "login": "Connexion",
     "signup": "S'inscrire",
+    "signIn": "Se connecter",
     "email": "Email",
     "password": "Mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
+    "fullName": "Nom complet",
+    "fullNameOptional": "Nom complet (optionnel)",
     "forgotPassword": "Mot de passe oublié?",
     "alreadyHaveAccount": "Vous avez déjà un compte?",
     "dontHaveAccount": "Vous n'avez pas de compte?",
     "resetPassword": "Réinitialiser le mot de passe",
     "backToLogin": "Retour à la connexion",
-    "checkEmail": "Vérifiez votre email pour un lien de réinitialisation du mot de passe"
+    "checkEmail": "Vérifiez votre email pour le lien de réinitialisation",
+    "createAccount": "Créer un compte",
+    "creatingAccount": "Création du compte...",
+    "createYourAccount": "Créez votre compte",
+    "startJourney": "Commencez votre parcours de bien-être mental aujourd'hui",
+    "passwordMinLength": "Au moins 8 caractères",
+    "sendResetLink": "Envoyer le lien",
+    "sendingLink": "Envoi du lien...",
+    "resetPasswordTitle": "Réinitialisez votre mot de passe",
+    "resetPasswordSubtitle": "Entrez votre email et nous vous enverrons un lien",
+    "checkEmailTitle": "Vérifiez votre email",
+    "checkEmailMessage": "Nous avons envoyé un lien de réinitialisation à votre adresse email.",
+    "returnToSignIn": "Retourner à la connexion"
   },
   "onboarding": {
     "welcome": {
@@ -611,6 +626,86 @@
       "morning": "5:00-11:59",
       "day": "12:00-17:59",
       "evening": "18:00-23:59"
+    }
+  },
+  "testDetail": {
+    "backToTests": "Retour aux tests",
+    "testNotFound": "Test non trouvé",
+    "whatItMeasures": "Ce que ce test mesure",
+    "whatItMeasuresDescription": "Cette évaluation aide à évaluer votre état actuel et fournit des informations basées sur des échelles psychologiques validées.",
+    "resultCategories": "Catégories de résultats",
+    "points": "points",
+    "startTest": "Commencer le test",
+    "viewHistory": "Voir l'historique",
+    "privacyNote": "Vos réponses sont privées et stockées en toute sécurité. Ce test est à des fins d'auto-évaluation et ne constitue pas un avis médical."
+  },
+  "exerciseDetail": {
+    "backToExercises": "Retour aux exercices",
+    "exerciseNotFound": "Exercice non trouvé",
+    "whatThisHelps": "Ce que cela aide",
+    "howItWorks": "Comment ça marche",
+    "stepsInfo": "{{count}} étapes • Environ {{minutes}} minutes par étape",
+    "startExercise": "Commencer l'exercice",
+    "addToCalendar": "Ajouter au calendrier",
+    "share": "Partager",
+    "linkCopied": "Lien copié dans le presse-papiers",
+    "note": "Trouvez un espace calme et confortable. Cet exercice fonctionne mieux lorsque vous pouvez vous concentrer sans distractions.",
+    "difficulty": {
+      "easy": "Convient aux débutants",
+      "medium": "Expérience modérée utile",
+      "hard": "Pratique avancée"
+    }
+  },
+  "activityTemplates": {
+    "title": "Modèles d'activités",
+    "searchPlaceholder": "Rechercher des activités...",
+    "noTemplatesFound": "Aucun modèle trouvé",
+    "addToToday": "Ajouter aujourd'hui",
+    "schedule": "Programmer",
+    "activityAdded": "Activité ajoutée aujourd'hui!",
+    "activityAddFailed": "Échec de l'ajout de l'activité",
+    "categories": {
+      "sleep": "Sommeil et repos",
+      "nutrition": "Nutrition",
+      "hydration": "Hydratation",
+      "exercise": "Exercice",
+      "hobby": "Loisir",
+      "work": "Travail",
+      "social": "Social",
+      "practice": "Pratique",
+      "health": "Santé",
+      "reflection": "Réflexion",
+      "leisure": "Loisirs"
+    },
+    "impact": {
+      "restorative": "Réparateur",
+      "restorativeDesc": "Aide à récupérer de l'énergie",
+      "draining": "Épuisant",
+      "drainingDesc": "Nécessite de l'énergie",
+      "mixed": "Mixte",
+      "mixedDesc": "Difficile mais gratifiant",
+      "neutral": "Neutre",
+      "neutralDesc": "Effet équilibré"
+    },
+    "category": "Catégorie",
+    "impactType": "Type d'impact",
+    "defaultDuration": "Durée par défaut"
+  },
+  "trackerHistory": {
+    "title": "Historique de l'humeur",
+    "subtitle": "Suivez votre parcours de bien-être mental",
+    "export": "Exporter",
+    "back": "Retour",
+    "exportSuccess": "Exportation réussie",
+    "exportDescription": "Vos données ont été téléchargées.",
+    "loadError": "Erreur lors du chargement de l'historique",
+    "noEntriesYet": "Aucune entrée pour le moment",
+    "noEntriesDescription": "Commencez à suivre votre humeur pour voir les informations",
+    "startTracking": "Commencer le suivi",
+    "periods": {
+      "day": "Jour",
+      "week": "Semaine",
+      "month": "Mois"
     }
   }
 }

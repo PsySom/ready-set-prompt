@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 
 const emailSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,16 +51,16 @@ const ForgotPassword = () => {
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-foreground">Check your email</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('auth.checkEmailTitle')}</h1>
             <p className="text-muted-foreground">
-              We've sent a password reset link to <strong>{email}</strong>
+              {t('auth.checkEmailMessage')}
             </p>
           </div>
 
           <Link to="/login">
             <Button className="w-full">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to sign in
+              {t('auth.returnToSignIn')}
             </Button>
           </Link>
         </div>
@@ -75,18 +77,18 @@ const ForgotPassword = () => {
             className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground smooth-transition mb-6"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to sign in
+            {t('auth.backToLogin')}
           </Link>
           
-          <h1 className="text-3xl font-bold text-foreground mb-2">Reset your password</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t('auth.resetPasswordTitle')}</h1>
           <p className="text-muted-foreground">
-            Enter your email and we'll send you a reset link
+            {t('auth.resetPasswordSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('auth.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -109,10 +111,10 @@ const ForgotPassword = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending reset link...
+                {t('auth.sendingLink')}
               </>
             ) : (
-              'Send reset link'
+              t('auth.sendResetLink')
             )}
           </Button>
         </form>
