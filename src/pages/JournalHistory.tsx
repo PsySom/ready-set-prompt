@@ -26,6 +26,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from 'react-i18next';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { JournalStats } from '@/components/journal/JournalStats';
 import { JournalInsights } from '@/components/journal/JournalInsights';
@@ -86,6 +87,7 @@ const JournalHistory = () => {
   });
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadSessions();
@@ -528,7 +530,7 @@ const JournalHistory = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold text-foreground flex-1">Journal History</h1>
+          <h1 className="text-2xl font-bold text-foreground flex-1">{t('journal.history')}</h1>
           <Button
             variant="ghost"
             size="icon"
@@ -552,7 +554,7 @@ const JournalHistory = () => {
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search sessions..."
+              placeholder={t('journal.searchPlaceholder')}
               className="pl-10"
             />
           </div>
@@ -563,7 +565,7 @@ const JournalHistory = () => {
           {isLoading ? (
             <p className="text-center text-muted-foreground">Loading...</p>
           ) : filteredSessions.length === 0 ? (
-            <p className="text-center text-muted-foreground">No journal entries found</p>
+            <p className="text-center text-muted-foreground">{t('journal.noEntriesFound')}</p>
           ) : (
             Object.entries(groupedSessions).map(([date, dateSessions]) => (
               <Collapsible key={date} defaultOpen className="space-y-2">

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, FileText, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 interface Test {
   id: string;
@@ -28,6 +29,8 @@ const Tests = () => {
   const [lastResults, setLastResults] = useState<{ [key: string]: LastResult }>({});
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadTests();
@@ -83,9 +86,9 @@ const Tests = () => {
       <div className="space-y-6 lg:space-y-8 animate-fade-in">
         {/* Header */}
         <div>
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Psychological Tests</h1>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t('tests.title')}</h1>
           <p className="text-sm md:text-base text-muted-foreground mt-2">
-            Track your mental health with validated assessments
+            {t('tests.subtitle')}
           </p>
         </div>
 
@@ -107,7 +110,7 @@ const Tests = () => {
             </>
           ) : tests.length === 0 ? (
             <p className="text-center text-muted-foreground col-span-2">
-              No tests available
+              {t('tests.noTests')}
             </p>
           ) : (
             tests.map((test, index) => {
@@ -133,11 +136,11 @@ const Tests = () => {
                     <div className="flex flex-wrap gap-sm">
                       <Badge variant="outline" className="gap-1 text-sm medium-transition group-hover:border-primary">
                         <Clock className="h-4 w-4" />
-                        {test.duration_minutes} min
+                        {test.duration_minutes} {t('common.minutes')}
                       </Badge>
                       <Badge variant="outline" className="gap-1 text-sm medium-transition group-hover:border-primary">
                         <FileText className="h-4 w-4" />
-                        {test.total_questions} questions
+                        {test.total_questions} {t('tests.questions').toLowerCase()}
                       </Badge>
                     </div>
 
@@ -157,7 +160,7 @@ const Tests = () => {
                       variant={lastResult ? 'secondary' : 'default'}
                       size="default"
                     >
-                      {lastResult ? 'Take Again' : 'Take Test'}
+                      {lastResult ? t('tests.takeAgain') : t('tests.take')}
                       <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
                     </Button>
                   </div>

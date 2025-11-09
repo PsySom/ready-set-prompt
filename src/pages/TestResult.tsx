@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, RefreshCw, Share2, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface TestResult {
   id: string;
@@ -35,6 +36,7 @@ const TestResult = () => {
   const { slug, resultId } = useParams<{ slug: string; resultId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [result, setResult] = useState<TestResult | null>(null);
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,11 +99,11 @@ const TestResult = () => {
     if (!result) return '';
 
     if (result.category.includes('low') || result.category === 'minimal') {
-      return "Great! Your results indicate a healthy state. Continue with your current wellness practices.";
+      return t('tests.recommendations.minimal');
     } else if (result.category.includes('moderate') || result.category === 'mild') {
-      return "Your results suggest moderate levels. Consider incorporating stress-reduction activities and monitoring your progress.";
+      return t('tests.recommendations.mild');
     } else {
-      return "Your results indicate high levels. Consider speaking with a mental health professional for personalized support.";
+      return t('tests.recommendations.severe');
     }
   };
 
@@ -112,7 +114,7 @@ const TestResult = () => {
   const handleShare = () => {
     const url = `${window.location.origin}/tests/${slug}/results/${resultId}`;
     navigator.clipboard.writeText(url);
-    toast({ title: 'Link copied to clipboard' });
+    toast({ title: t('exercises.linkCopied') });
   };
 
   if (isLoading) {
@@ -131,9 +133,9 @@ const TestResult = () => {
     return (
       <AppLayout>
         <div className="p-6 text-center">
-          <p className="text-muted-foreground">Result not found</p>
+          <p className="text-muted-foreground">{t('tests.testNotFound')}</p>
           <Button onClick={() => navigate('/tests')} className="mt-4">
-            Back to Tests
+            {t('tests.backToTests')}
           </Button>
         </div>
       </AppLayout>
@@ -158,7 +160,7 @@ const TestResult = () => {
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground">{test.name_en}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Completed on {new Date(result.completed_at).toLocaleDateString('en-US', {
+              {t('tests.completedOn')} {new Date(result.completed_at).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -191,7 +193,7 @@ const TestResult = () => {
 
         {/* Interpretation */}
         <Card className="p-6 space-y-4">
-          <h3 className="text-xl font-semibold text-foreground">What This Means</h3>
+          <h3 className="text-xl font-semibold text-foreground">{t('tests.whatThisMeans')}</h3>
           <p className="text-muted-foreground">
             {getRecommendation()}
           </p>
@@ -202,21 +204,21 @@ const TestResult = () => {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-primary" />
             <h3 className="text-xl font-semibold text-foreground">
-              Recommended Next Steps
+              {t('tests.recommendedSteps')}
             </h3>
           </div>
           <ul className="space-y-2 text-muted-foreground">
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
-              <span>Schedule regular check-ins with yourself using the journal feature</span>
+              <span>{t('tests.recommendations.step1')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
-              <span>Track your daily activities and their impact on your wellbeing</span>
+              <span>{t('tests.recommendations.step2')}</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary mt-1">•</span>
-              <span>Retake this test periodically to monitor your progress</span>
+              <span>{t('tests.recommendations.step3')}</span>
             </li>
           </ul>
         </Card>
@@ -225,24 +227,23 @@ const TestResult = () => {
         <div className="flex gap-3">
           <Button onClick={handleRetake} variant="default" className="flex-1">
             <RefreshCw className="h-4 w-4 mr-2" />
-            Take Again
+            {t('tests.takeAgain')}
           </Button>
           <Button onClick={handleShare} variant="outline">
             <Share2 className="h-4 w-4 mr-2" />
-            Share
+            {t('exercises.share')}
           </Button>
           <Button
             onClick={() => navigate(`/tests/${slug}/history`)}
             variant="outline"
           >
-            View History
+            {t('tests.viewHistory')}
           </Button>
         </div>
 
         {/* Disclaimer */}
         <p className="text-xs text-muted-foreground text-center">
-          This assessment is for informational purposes only and does not replace professional medical advice. 
-          If you're experiencing distress, please consult with a qualified mental health professional.
+          {t('tests.disclaimer')}
         </p>
       </div>
     </AppLayout>

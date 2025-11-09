@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, X, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ const ExerciseSession = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -117,8 +119,8 @@ const ExerciseSession = () => {
     }
 
     toast({ 
-      title: 'Exercise completed!',
-      description: 'Great work on your practice.'
+      title: t('exercises.exerciseCompleted'),
+      description: t('exercises.greatWork')
     });
 
     navigate('/exercises');
@@ -140,16 +142,16 @@ const ExerciseSession = () => {
             <div className="text-6xl">{exercise.emoji}</div>
             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
             <h2 className="text-2xl font-bold text-foreground">
-              Well Done!
+              {t('exercises.wellDone')}
             </h2>
             <p className="text-muted-foreground">
-              You've completed {exercise.name_en}
+              {t('exercises.youCompleted')} {exercise.name_en}
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>How do you feel now? (1-10)</Label>
+              <Label>{t('exercises.howFeelNow')}</Label>
               <div className="flex items-center gap-4">
                 <span className="text-2xl">😟</span>
                 <Slider
@@ -166,11 +168,11 @@ const ExerciseSession = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Notes (optional)</Label>
+              <Label>{t('exercises.notesOptional')}</Label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="How was this practice for you?"
+                placeholder={t('exercises.notesPlaceholder')}
                 rows={3}
               />
             </div>
@@ -178,14 +180,14 @@ const ExerciseSession = () => {
 
           <div className="space-y-2">
             <Button onClick={handleComplete} className="w-full">
-              Done
+              {t('exercises.done')}
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/journal')}
               className="w-full"
             >
-              Add to Journal
+              {t('exercises.addToJournal')}
             </Button>
           </div>
         </Card>
@@ -205,7 +207,7 @@ const ExerciseSession = () => {
             <X className="h-5 w-5" />
           </Button>
           <span className="text-sm text-muted-foreground">
-            Step {currentStep + 1} of {exercise.instructions.length}
+            {t('exercises.step')} {currentStep + 1} {t('tests.of')} {exercise.instructions.length}
           </span>
           <div className="w-10" /> {/* Spacer */}
         </div>
@@ -235,7 +237,7 @@ const ExerciseSession = () => {
 
             {instruction.duration && (
               <div className="text-sm text-muted-foreground">
-                Take about {instruction.duration} seconds
+                {t('exercises.takeAbout')} {instruction.duration} {t('exercises.seconds')}
               </div>
             )}
           </div>
@@ -252,14 +254,14 @@ const ExerciseSession = () => {
             disabled={currentStep === 0}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
+            {t('tests.previous')}
           </Button>
 
           <Button
             size="lg"
             onClick={handleNext}
           >
-            {currentStep === exercise.instructions.length - 1 ? 'Complete' : 'Next'}
+            {currentStep === exercise.instructions.length - 1 ? t('exercises.complete') : t('tests.next')}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>
@@ -269,15 +271,15 @@ const ExerciseSession = () => {
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Exit exercise?</AlertDialogTitle>
+            <AlertDialogTitle>{t('exercises.exitExercise')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Your progress will not be saved if you exit now.
+              {t('exercises.progressNotSaved')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continue Exercise</AlertDialogCancel>
+            <AlertDialogCancel>{t('exercises.continueExercise')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmExit}>
-              Exit
+              {t('exercises.exit')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

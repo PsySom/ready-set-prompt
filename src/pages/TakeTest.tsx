@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface Question {
   id: number;
@@ -37,6 +38,7 @@ const TakeTest = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [test, setTest] = useState<Test | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
@@ -102,7 +104,7 @@ const TakeTest = () => {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({ title: 'Please log in to save your results', variant: 'destructive' });
+      toast({ title: t('tests.errorSaving'), variant: 'destructive' });
       return;
     }
 
@@ -129,12 +131,12 @@ const TakeTest = () => {
       .single();
 
     if (error) {
-      toast({ title: 'Error saving results', variant: 'destructive' });
+      toast({ title: t('tests.errorSaving'), variant: 'destructive' });
       setIsSubmitting(false);
       return;
     }
 
-    toast({ title: 'Test completed!' });
+    toast({ title: t('tests.testCompleted') });
     navigate(`/tests/${slug}/results/${data.id}`);
   };
 
@@ -142,7 +144,7 @@ const TakeTest = () => {
     return (
       <AppLayout>
         <div className="p-6 text-center">
-          <p>Loading test...</p>
+          <p>{t('tests.loadingTest')}</p>
         </div>
       </AppLayout>
     );
@@ -167,7 +169,7 @@ const TakeTest = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <span className="text-sm text-muted-foreground">
-            Question {currentQuestion + 1} of {test.questions.length}
+            {t('tests.question')} {currentQuestion + 1} {t('tests.of')} {test.questions.length}
           </span>
         </div>
 
@@ -175,7 +177,7 @@ const TakeTest = () => {
         <div className="space-y-2">
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-muted-foreground text-center">
-            {Math.round(progress)}% complete
+            {Math.round(progress)}% {t('tests.complete')}
           </p>
         </div>
 
@@ -184,7 +186,7 @@ const TakeTest = () => {
           <div className="space-y-6">
             <div>
               <span className="text-sm text-muted-foreground">
-                Question {currentQuestion + 1}
+                {t('tests.question')} {currentQuestion + 1}
               </span>
               <h2 className="text-2xl font-semibold text-foreground mt-2">
                 {question.text}
@@ -224,7 +226,7 @@ const TakeTest = () => {
             disabled={currentQuestion === 0}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
+            {t('tests.previous')}
           </Button>
 
           {isLastQuestion ? (
@@ -232,14 +234,14 @@ const TakeTest = () => {
               onClick={submitTest}
               disabled={!allAnswered || isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Test'}
+              {isSubmitting ? t('tests.submitting') : t('tests.submitTest')}
             </Button>
           ) : (
             <Button
               onClick={goToNext}
               disabled={!isAnswered}
             >
-              Next
+              {t('tests.next')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           )}
@@ -248,7 +250,7 @@ const TakeTest = () => {
         {/* Help Text */}
         {!isAnswered && (
           <p className="text-sm text-muted-foreground text-center">
-            Please select an answer to continue
+            {t('tests.pleaseAnswer')}
           </p>
         )}
       </div>

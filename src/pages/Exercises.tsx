@@ -9,6 +9,7 @@ import { Clock, Search, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTranslation } from 'react-i18next';
 
 interface Exercise {
   id: string;
@@ -28,6 +29,7 @@ const Exercises = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadExercises();
@@ -91,9 +93,9 @@ const Exercises = () => {
       <div className="space-y-6 lg:space-y-8 animate-fade-in">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground animate-slide-up">Exercises & Practices</h1>
+          <h1 className="text-3xl font-bold text-foreground animate-slide-up">{t('exercises.title')}</h1>
           <p className="text-base text-muted-foreground mt-sm">
-            Guided exercises for mental wellness
+            {t('exercises.subtitle')}
           </p>
         </div>
 
@@ -103,7 +105,7 @@ const Exercises = () => {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search exercises..."
+            placeholder={t('exercises.searchPlaceholder')}
             className="pl-10 h-12 text-base"
           />
         </div>
@@ -111,11 +113,11 @@ const Exercises = () => {
         {/* Category Tabs */}
         <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="all" className="text-sm">All</TabsTrigger>
-            <TabsTrigger value="grounding" className="text-sm">Grounding</TabsTrigger>
-            <TabsTrigger value="stress" className="text-sm">Stress Relief</TabsTrigger>
-            <TabsTrigger value="anxiety" className="text-sm">Anxiety</TabsTrigger>
-            <TabsTrigger value="cognitive" className="text-sm">Cognitive</TabsTrigger>
+            <TabsTrigger value="all" className="text-sm">{t('exercises.categories.all')}</TabsTrigger>
+            <TabsTrigger value="grounding" className="text-sm">{t('exercises.categories.grounding')}</TabsTrigger>
+            <TabsTrigger value="stress" className="text-sm">{t('exercises.categories.stress')}</TabsTrigger>
+            <TabsTrigger value="anxiety" className="text-sm">{t('exercises.categories.anxiety')}</TabsTrigger>
+            <TabsTrigger value="cognitive" className="text-sm">{t('exercises.categories.cognitive')}</TabsTrigger>
           </TabsList>
         </Tabs>
 
@@ -134,7 +136,7 @@ const Exercises = () => {
             </>
           ) : filteredExercises.length === 0 ? (
             <p className="text-center text-muted-foreground col-span-full">
-              No exercises found
+              {t('exercises.noExercisesFound')}
             </p>
           ) : (
             filteredExercises.map((exercise, index) => (
@@ -173,7 +175,7 @@ const Exercises = () => {
                   </div>
 
                   <Button className="w-full hover-scale transition-all" size="default">
-                    Start
+                    {t('exercises.start')}
                     <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
                   </Button>
                 </div>
