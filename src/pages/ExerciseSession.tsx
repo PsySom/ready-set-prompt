@@ -43,7 +43,7 @@ const ExerciseSession = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, getLocalizedObject } = useLocale();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -73,8 +73,9 @@ const ExerciseSession = () => {
 
   const handleNext = () => {
     if (!exercise) return;
+    const instructions = getLocalizedObject(exercise, 'instructions') as Instruction[] || [];
 
-    if (currentStep < exercise.instructions.length - 1) {
+    if (currentStep < instructions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       setIsCompleted(true);
@@ -197,8 +198,9 @@ const ExerciseSession = () => {
     );
   }
 
-  const instruction = exercise.instructions[currentStep];
-  const progress = ((currentStep + 1) / exercise.instructions.length) * 100;
+  const instruction = (getLocalizedObject(exercise, 'instructions') as Instruction[] || [])[currentStep];
+  const instructions = getLocalizedObject(exercise, 'instructions') as Instruction[] || [];
+  const progress = ((currentStep + 1) / instructions.length) * 100;
 
   return (
     <div className="min-h-screen bg-background">
@@ -209,7 +211,7 @@ const ExerciseSession = () => {
             <X className="h-5 w-5" />
           </Button>
           <span className="text-sm text-muted-foreground">
-            {t('exercises.step')} {currentStep + 1} {t('tests.of')} {exercise.instructions.length}
+            {t('exercises.step')} {currentStep + 1} {t('tests.of')} {instructions.length}
           </span>
           <div className="w-10" /> {/* Spacer */}
         </div>
@@ -228,16 +230,16 @@ const ExerciseSession = () => {
               {instruction.step}
             </div>
 
-            <div className="space-y-4">
+             <div className="space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                {getLocalizedField(instruction, 'title')}
+                {instruction?.title || ''}
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                {getLocalizedField(instruction, 'content')}
+                {instruction?.content || ''}
               </p>
             </div>
 
-            {instruction.duration && (
+            {instruction?.duration && (
               <div className="text-sm text-muted-foreground">
                 {t('exercises.takeAbout')} {instruction.duration} {t('exercises.seconds')}
               </div>
@@ -263,7 +265,7 @@ const ExerciseSession = () => {
             size="lg"
             onClick={handleNext}
           >
-            {currentStep === exercise.instructions.length - 1 ? t('exercises.complete') : t('tests.next')}
+            {currentStep === instructions.length - 1 ? t('exercises.complete') : t('tests.next')}
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </div>

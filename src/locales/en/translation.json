@@ -443,7 +443,9 @@
       "step3": "Retake this test periodically to monitor your progress"
     },
     "noTests": "No tests available",
-    "lastTaken": "Last taken"
+    "lastTaken": "Last taken",
+    "completedOn": "Completed on",
+    "results": "Results"
   },
   "exercises": {
     "title": "Exercises & Practices",
@@ -749,6 +751,7 @@
     "whatThisHelps": "What This Helps With",
     "howItWorks": "How It Works",
     "stepsInfo": "{{count}} steps • Approximately {{minutes}} minutes per step",
+    "andMore": "...and {{count}} more steps",
     "startExercise": "Start Exercise",
     "addToCalendar": "Add to Calendar",
     "share": "Share",

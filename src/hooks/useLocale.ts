@@ -20,6 +20,40 @@ export const useLocale = () => {
     return '' as any;
   };
 
+  const getLocalizedArray = (obj: any, fieldName: string): any[] => {
+    if (!obj) return [];
+    const raw = (i18n.language || 'en').toLowerCase();
+    const base = raw.split('-')[0];
+    const candidates = [
+      `${fieldName}_${raw}`,
+      `${fieldName}_${base}`,
+      `${fieldName}_en`,
+      fieldName,
+    ];
+    for (const key of candidates) {
+      const val = obj?.[key as keyof typeof obj];
+      if (Array.isArray(val) && val.length > 0) return val;
+    }
+    return [];
+  };
+
+  const getLocalizedObject = (obj: any, fieldName: string): any => {
+    if (!obj) return null;
+    const raw = (i18n.language || 'en').toLowerCase();
+    const base = raw.split('-')[0];
+    const candidates = [
+      `${fieldName}_${raw}`,
+      `${fieldName}_${base}`,
+      `${fieldName}_en`,
+      fieldName,
+    ];
+    for (const key of candidates) {
+      const val = obj?.[key as keyof typeof obj];
+      if (val !== undefined && val !== null && typeof val === 'object') return val;
+    }
+    return null;
+  };
+
   const formatDate = (date: Date | string, options?: Intl.DateTimeFormatOptions) => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     return new Intl.DateTimeFormat(i18n.language, options).format(dateObj);
@@ -32,6 +66,8 @@ export const useLocale = () => {
   return {
     locale: i18n.language,
     getLocalizedField,
+    getLocalizedArray,
+    getLocalizedObject,
     formatDate,
     formatNumber,
   };

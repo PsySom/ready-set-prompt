@@ -186,45 +186,75 @@ export type Database = {
           category: string
           created_at: string | null
           description: string | null
+          description_en: string | null
+          description_fr: string | null
+          description_ru: string | null
           difficulty: string
           duration_minutes: number
           effects: string[]
+          effects_en: string[] | null
+          effects_fr: string[] | null
+          effects_ru: string[] | null
           emoji: string
           id: string
           instructions: Json
+          instructions_en: Json | null
+          instructions_fr: Json | null
+          instructions_ru: Json | null
           name: string
           name_en: string
           name_fr: string
+          name_ru: string | null
           slug: string
         }
         Insert: {
           category: string
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          description_ru?: string | null
           difficulty: string
           duration_minutes: number
           effects: string[]
+          effects_en?: string[] | null
+          effects_fr?: string[] | null
+          effects_ru?: string[] | null
           emoji: string
           id?: string
           instructions: Json
+          instructions_en?: Json | null
+          instructions_fr?: Json | null
+          instructions_ru?: Json | null
           name: string
           name_en: string
           name_fr: string
+          name_ru?: string | null
           slug: string
         }
         Update: {
           category?: string
           created_at?: string | null
           description?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          description_ru?: string | null
           difficulty?: string
           duration_minutes?: number
           effects?: string[]
+          effects_en?: string[] | null
+          effects_fr?: string[] | null
+          effects_ru?: string[] | null
           emoji?: string
           id?: string
           instructions?: Json
+          instructions_en?: Json | null
+          instructions_fr?: Json | null
+          instructions_ru?: Json | null
           name?: string
           name_en?: string
           name_fr?: string
+          name_ru?: string | null
           slug?: string
         }
         Relationships: []

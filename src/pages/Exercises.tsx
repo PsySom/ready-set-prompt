@@ -34,7 +34,7 @@ const Exercises = () => {
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, getLocalizedArray } = useLocale();
 
   const handleScheduleExercise = (exercise: Exercise, e: React.MouseEvent) => {
     e.stopPropagation();

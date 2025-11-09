@@ -34,7 +34,7 @@ const ExerciseDetail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, getLocalizedArray, getLocalizedObject } = useLocale();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -161,7 +161,7 @@ const ExerciseDetail = () => {
             ✨ {t('exerciseDetail.whatThisHelps')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {(Array.isArray(getLocalizedField(exercise, 'effects')) ? (getLocalizedField(exercise, 'effects') as string[]) : exercise.effects).map((effect, i) => (
+            {getLocalizedArray(exercise, 'effects').map((effect, i) => (
               <Badge key={i} variant="secondary">
                 {effect}
               </Badge>
@@ -174,18 +174,18 @@ const ExerciseDetail = () => {
           <h3 className="text-lg font-semibold text-foreground">{t('exerciseDetail.howItWorks')}</h3>
           <p className="text-sm text-muted-foreground">
             {t('exerciseDetail.stepsInfo', { 
-              count: exercise.instructions.length,
-              minutes: Math.ceil(exercise.duration_minutes / exercise.instructions.length)
+              count: (getLocalizedObject(exercise, 'instructions') as any[] || []).length,
+              minutes: Math.ceil(exercise.duration_minutes / (getLocalizedObject(exercise, 'instructions') as any[] || []).length)
             })}
           </p>
           <div className="space-y-2">
-            {exercise.instructions.map((instruction, i) => (
+            {(getLocalizedObject(exercise, 'instructions') as any[] || []).map((instruction: any, i: number) => (
               <div key={i} className="flex gap-3 p-3 rounded-lg bg-muted/30">
                 <div className="flex items-center justify-center h-8 w-8 rounded-full bg-primary/10 text-primary font-semibold shrink-0">
                   {instruction.step}
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-sm">{getLocalizedField(instruction, 'title')}</h4>
+                  <h4 className="font-medium text-sm">{instruction.title}</h4>
                 </div>
               </div>
             ))}
