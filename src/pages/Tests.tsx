@@ -80,17 +80,17 @@ const Tests = () => {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 lg:space-y-8 animate-fade-in">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Psychological Tests</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Psychological Tests</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
             Track your mental health with validated assessments
           </p>
         </div>
 
         {/* Tests Grid */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {isLoading ? (
             <>
               {[1, 2, 3, 4].map((i) => (
@@ -110,32 +110,33 @@ const Tests = () => {
               No tests available
             </p>
           ) : (
-            tests.map((test) => {
+            tests.map((test, index) => {
               const lastResult = lastResults[test.id];
               
               return (
                 <Card
                   key={test.id}
-                  className="p-6 hover:shadow-lg smooth-transition cursor-pointer"
+                  className="p-6 md:p-8 hover:shadow-lg hover-scale transition-all duration-300 cursor-pointer animate-fade-in group"
                   onClick={() => navigate(`/tests/${test.slug}`)}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
-                  <div className="space-y-4">
+                  <div className="space-y-4 md:space-y-5">
                     <div>
-                      <h3 className="text-xl font-semibold text-foreground">
+                      <h3 className="text-xl md:text-2xl font-semibold text-foreground transition-colors duration-300 group-hover:text-primary">
                         {test.name_en}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm md:text-base text-muted-foreground mt-2">
                         {test.description_en}
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="gap-1">
-                        <Clock className="h-3 w-3" />
+                    <div className="flex flex-wrap gap-2 md:gap-3">
+                      <Badge variant="outline" className="gap-1 md:gap-2 text-xs md:text-sm transition-all duration-300 group-hover:border-primary">
+                        <Clock className="h-3 w-3 md:h-4 md:w-4" />
                         {test.duration_minutes} min
                       </Badge>
-                      <Badge variant="outline" className="gap-1">
-                        <FileText className="h-3 w-3" />
+                      <Badge variant="outline" className="gap-1 md:gap-2 text-xs md:text-sm transition-all duration-300 group-hover:border-primary">
+                        <FileText className="h-3 w-3 md:h-4 md:w-4" />
                         {test.total_questions} questions
                       </Badge>
                     </div>
@@ -151,9 +152,13 @@ const Tests = () => {
                       </div>
                     )}
 
-                    <Button className="w-full" variant={lastResult ? 'secondary' : 'default'}>
+                    <Button 
+                      className="w-full hover-scale transition-all" 
+                      variant={lastResult ? 'secondary' : 'default'}
+                      size="default"
+                    >
                       {lastResult ? 'Take Again' : 'Take Test'}
-                      <ChevronRight className="h-4 w-4 ml-2" />
+                      <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
                     </Button>
                   </div>
                 </Card>

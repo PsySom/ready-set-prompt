@@ -129,37 +129,37 @@ const TrackerHistory = () => {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 lg:space-y-8 animate-fade-in">
         {/* Header */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 lg:space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <Button
               variant="ghost"
-              size="sm"
+              size="default"
               onClick={() => navigate('/dashboard')}
-              className="pl-0"
+              className="pl-0 hover-scale transition-all"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               Back
             </Button>
 
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="default" onClick={handleExport} className="hover-scale transition-all self-start sm:self-auto">
+              <Download className="h-4 w-4 md:h-5 md:w-5 mr-2" />
               Export
             </Button>
           </div>
 
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Mood History</h1>
-            <p className="text-muted-foreground">Track your mental wellness journey</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Mood History</h1>
+            <p className="text-sm md:text-base text-muted-foreground mt-2">Track your mental wellness journey</p>
           </div>
 
           {/* Period Selector */}
           <Tabs value={period} onValueChange={(v) => setPeriod(v as Period)}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="day">Day</TabsTrigger>
-              <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="month">Month</TabsTrigger>
+            <TabsList className="grid w-full max-w-md grid-cols-3">
+              <TabsTrigger value="day" className="text-sm md:text-base">Day</TabsTrigger>
+              <TabsTrigger value="week" className="text-sm md:text-base">Week</TabsTrigger>
+              <TabsTrigger value="month" className="text-sm md:text-base">Month</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -182,25 +182,37 @@ const TrackerHistory = () => {
             </div>
           </Card>
         ) : (
-          <>
+          <div className="space-y-6 lg:space-y-8">
             {/* Mood Graph */}
-            <MoodGraph entries={entries} period={period} />
+            <div className="animate-fade-in">
+              <MoodGraph entries={entries} period={period} />
+            </div>
 
-            {/* Emotions Distribution */}
-            <EmotionsDistribution entries={entries} />
+            {/* Emotions and Stress Grid */}
+            <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <EmotionsDistribution entries={entries} />
+              </div>
+              <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <StressAnxietyGraph entries={entries} period={period} />
+              </div>
+            </div>
 
-            {/* Stress & Anxiety */}
-            <StressAnxietyGraph entries={entries} period={period} />
-
-            {/* Energy */}
-            <EnergyGraph entries={entries} period={period} />
-
-            {/* Satisfaction */}
-            <SatisfactionMetrics entries={entries} />
+            {/* Energy and Satisfaction Grid */}
+            <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="animate-fade-in" style={{ animationDelay: '300ms' }}>
+                <EnergyGraph entries={entries} period={period} />
+              </div>
+              <div className="animate-fade-in" style={{ animationDelay: '400ms' }}>
+                <SatisfactionMetrics entries={entries} />
+              </div>
+            </div>
 
             {/* Entries List */}
-            <EntriesList entries={entries} onEntryDeleted={fetchEntries} />
-          </>
+            <div className="animate-fade-in" style={{ animationDelay: '500ms' }}>
+              <EntriesList entries={entries} onEntryDeleted={fetchEntries} />
+            </div>
+          </div>
         )}
       </div>
     </AppLayout>

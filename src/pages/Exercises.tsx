@@ -88,39 +88,39 @@ const Exercises = () => {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 lg:space-y-8 animate-fade-in">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Exercises & Practices</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">Exercises & Practices</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-2">
             Guided exercises for mental wellness
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative max-w-2xl">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search exercises..."
-            className="pl-10"
+            className="pl-10 md:pl-12 h-10 md:h-12 text-sm md:text-base"
           />
         </div>
 
         {/* Category Tabs */}
         <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="grounding">Grounding</TabsTrigger>
-            <TabsTrigger value="stress">Stress Relief</TabsTrigger>
-            <TabsTrigger value="anxiety">Anxiety</TabsTrigger>
-            <TabsTrigger value="cognitive">Cognitive</TabsTrigger>
+            <TabsTrigger value="all" className="text-xs md:text-sm">All</TabsTrigger>
+            <TabsTrigger value="grounding" className="text-xs md:text-sm">Grounding</TabsTrigger>
+            <TabsTrigger value="stress" className="text-xs md:text-sm">Stress Relief</TabsTrigger>
+            <TabsTrigger value="anxiety" className="text-xs md:text-sm">Anxiety</TabsTrigger>
+            <TabsTrigger value="cognitive" className="text-xs md:text-sm">Cognitive</TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Exercises Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {isLoading ? (
             <>
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -137,43 +137,44 @@ const Exercises = () => {
               No exercises found
             </p>
           ) : (
-            filteredExercises.map((exercise) => (
+            filteredExercises.map((exercise, index) => (
               <Card
                 key={exercise.id}
-                className="p-6 hover:shadow-lg smooth-transition cursor-pointer"
+                className="p-6 md:p-8 hover:shadow-lg hover-scale transition-all duration-300 cursor-pointer animate-fade-in group"
                 onClick={() => navigate(`/exercises/${exercise.slug}`)}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className="space-y-4">
-                  <div className="text-5xl">{exercise.emoji}</div>
+                <div className="space-y-4 md:space-y-5">
+                  <div className="text-5xl md:text-6xl transition-transform duration-300 group-hover:scale-110">{exercise.emoji}</div>
 
                   <div>
-                    <h3 className="text-xl font-semibold text-foreground">
+                    <h3 className="text-xl md:text-2xl font-semibold text-foreground transition-colors duration-300 group-hover:text-primary">
                       {exercise.name_en}
                     </h3>
-                    <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="secondary">{getCategoryLabel(exercise.category)}</Badge>
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-2 md:mt-3">
+                      <Badge variant="secondary" className="text-xs md:text-sm">{getCategoryLabel(exercise.category)}</Badge>
+                      <span className="text-sm md:text-base text-muted-foreground">
                         {getDifficultyDots(exercise.difficulty)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-sm md:text-base text-muted-foreground">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5" />
                     {exercise.duration_minutes} min
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1 md:space-y-2">
                     {exercise.effects.slice(0, 2).map((effect, i) => (
-                      <p key={i} className="text-sm text-muted-foreground">
+                      <p key={i} className="text-sm md:text-base text-muted-foreground">
                         • {effect}
                       </p>
                     ))}
                   </div>
 
-                  <Button className="w-full">
+                  <Button className="w-full hover-scale transition-all" size="default">
                     Start
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    <ChevronRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
                   </Button>
                 </div>
               </Card>

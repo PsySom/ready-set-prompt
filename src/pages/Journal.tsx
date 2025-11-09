@@ -242,14 +242,14 @@ const Journal = () => {
     <AppLayout>
       <div className="flex flex-col h-[calc(100vh-8rem)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h1 className="text-2xl font-bold text-foreground">{t('journal.title')}</h1>
-          <div className="flex gap-2">
+        <div className="flex items-center justify-between p-4 md:p-6 lg:p-8 border-b border-border bg-card animate-fade-in">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t('journal.title')}</h1>
+          <div className="flex gap-2 md:gap-3">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Info className="h-5 w-5" />
+                  <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 hover-scale transition-all">
+                    <Info className="h-5 w-5 md:h-6 md:w-6" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -261,14 +261,15 @@ const Journal = () => {
               variant="ghost" 
               size="icon"
               onClick={() => navigate('/journal/history')}
+              className="h-9 w-9 md:h-10 md:w-10 hover-scale transition-all"
             >
-              <History className="h-5 w-5" />
+              <History className="h-5 w-5 md:h-6 md:w-6" />
             </Button>
           </div>
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 bg-background max-w-4xl mx-auto w-full">
           {messages.map((message) => (
             <div
               key={message.id}
@@ -279,14 +280,14 @@ const Journal = () => {
             >
               <div
                 className={cn(
-                  'max-w-[80%] rounded-lg px-4 py-2 shadow-sm',
+                  'max-w-[80%] md:max-w-[70%] lg:max-w-[65%] rounded-lg px-4 md:px-5 py-2 md:py-3 shadow-sm transition-all duration-300 hover:shadow-md',
                   message.message_type === 'user'
                     ? 'bg-primary text-primary-foreground ml-auto'
                     : 'bg-secondary text-secondary-foreground'
                 )}
               >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                <span className="text-xs opacity-70 mt-1 block">
+                <p className="text-sm md:text-base whitespace-pre-wrap">{message.content}</p>
+                <span className="text-xs md:text-sm opacity-70 mt-1 block">
                   {new Date(message.created_at).toLocaleTimeString([], { 
                     hour: '2-digit', 
                     minute: '2-digit' 
@@ -319,20 +320,20 @@ const Journal = () => {
 
         {/* Scenario Starters */}
         {!currentScenario && messages.length > 0 && (
-          <div className="flex gap-2 px-4 py-2 border-t border-border bg-muted/30">
+          <div className="flex gap-2 md:gap-3 px-4 md:px-6 lg:px-8 py-2 md:py-3 border-t border-border bg-muted/30 max-w-4xl mx-auto w-full">
             <Button
               variant="secondary"
-              size="sm"
+              size="default"
               onClick={() => startScenario('morning')}
-              className="flex-1"
+              className="flex-1 hover-scale transition-all text-sm md:text-base"
             >
               🌅 {t('journal.morning')}
             </Button>
             <Button
               variant="secondary"
-              size="sm"
+              size="default"
               onClick={() => startScenario('evening')}
-              className="flex-1"
+              className="flex-1 hover-scale transition-all text-sm md:text-base"
             >
               🌙 {t('journal.evening')}
             </Button>
@@ -340,8 +341,8 @@ const Journal = () => {
         )}
 
         {/* Input Area */}
-        <div className="border-t border-border p-4 bg-card">
-          <div className="flex gap-2 items-end">
+        <div className="border-t border-border p-4 md:p-6 lg:p-8 bg-card max-w-4xl mx-auto w-full">
+          <div className="flex gap-2 md:gap-3 items-end">
             <Textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
