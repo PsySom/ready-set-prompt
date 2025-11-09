@@ -31,7 +31,7 @@ const TestDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, getLocalizedObject } = useLocale();
   const [test, setTest] = useState<Test | null>(null);
   const [hasHistory, setHasHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +52,12 @@ const TestDetail = () => {
       .single();
 
     if (data) {
-      setTest(data as unknown as Test);
+      // Use localized scoring_info
+      const localizedTest = {
+        ...data,
+        scoring_info: getLocalizedObject(data, 'scoring_info') || data.scoring_info
+      };
+      setTest(localizedTest as unknown as Test);
 
       // Check if user has taken this test before
       const { data: { user } } = await supabase.auth.getUser();

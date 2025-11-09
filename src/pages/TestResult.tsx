@@ -38,7 +38,7 @@ const TestResult = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { getLocalizedField, formatDate } = useLocale();
+  const { getLocalizedField, getLocalizedObject, formatDate } = useLocale();
   const [result, setResult] = useState<TestResult | null>(null);
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,7 +68,12 @@ const TestResult = () => {
         .single();
 
       if (testData) {
-        setTest(testData as unknown as Test);
+        // Use localized scoring_info
+        const localizedTest = {
+          ...testData,
+          scoring_info: getLocalizedObject(testData, 'scoring_info') || testData.scoring_info
+        };
+        setTest(localizedTest as unknown as Test);
       }
     }
 

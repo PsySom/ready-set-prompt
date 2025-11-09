@@ -40,7 +40,7 @@ const TakeTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, getLocalizedObject } = useLocale();
   const [test, setTest] = useState<Test | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
@@ -60,7 +60,13 @@ const TakeTest = () => {
       .single();
 
     if (data) {
-      setTest(data as unknown as Test);
+      // Use localized questions and scoring_info
+      const localizedTest = {
+        ...data,
+        questions: getLocalizedObject(data, 'questions') || data.questions,
+        scoring_info: getLocalizedObject(data, 'scoring_info') || data.scoring_info
+      };
+      setTest(localizedTest as unknown as Test);
     }
   };
 
@@ -191,7 +197,7 @@ const TakeTest = () => {
                 {t('tests.question')} {currentQuestion + 1}
               </span>
               <h2 className="text-2xl font-semibold text-foreground mt-2">
-                {getLocalizedField(question, 'text')}
+                {question.text}
               </h2>
             </div>
 
@@ -211,7 +217,7 @@ const TakeTest = () => {
                       htmlFor={`option-${index}`}
                       className="flex-1 cursor-pointer text-base"
                     >
-                      {getLocalizedField(option, 'label')}
+                      {option.label}
                     </Label>
                   </div>
                 ))}
