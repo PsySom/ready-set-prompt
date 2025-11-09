@@ -87,7 +87,12 @@
       "add": "Ajouter",
       "noActivities": "Aucune activité prévue pour aujourd'hui",
       "planYourDay": "Planifiez votre journée",
-      "viewAll": "Voir toutes les activités"
+      "viewAll": "Voir toutes les activités",
+      "noTime": "À tout moment",
+      "marked": "Activité marquée comme terminée",
+      "unmarked": "Activité marquée comme prévue",
+      "errorLoading": "Échec du chargement des activités",
+      "errorUpdating": "Échec de la mise à jour de l'activité"
     },
     "quickStats": {
       "mood": "Humeur",

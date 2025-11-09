@@ -1,26 +1,110 @@
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface Activity {
+  id: string;
+  title: string;
+  start_time: string | null;
+  status: string;
+  impact_type: string;
+}
 
 const TodayActivitiesCard = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - будет заменено на реальные данные из Supabase
-  const activities = [
-    { id: 1, name: 'Morning meditation', time: '09:00', completed: true, impact: 'restorative' },
-    { id: 2, name: 'Workout', time: '10:30', completed: false, impact: 'restorative' },
-    { id: 3, name: 'Team meeting', time: '14:00', completed: false, impact: 'draining' },
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchTodayActivities();
+      setupRealtimeSubscription();
+    }
+  }, [user]);
+
+  const fetchTodayActivities = async () => {
+    if (!user) return;
+    
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('activities')
+        .select('id, title, start_time, status, impact_type')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .order('start_time', { ascending: true });
+
+      if (error) throw error;
+      setActivities(data || []);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      toast.error(t('dashboard.todayActivitiesCard.errorLoading'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const setupRealtimeSubscription = () => {
+    const channel = supabase
+      .channel('activities-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activities',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchTodayActivities();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const toggleComplete = async (activityId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'completed' ? 'planned' : 'completed';
+      
+      const { error } = await supabase
+        .from('activities')
+        .update({ status: newStatus })
+        .eq('id', activityId);
+
+      if (error) throw error;
+      
+      await fetchTodayActivities();
+      toast.success(
+        newStatus === 'completed' 
+          ? t('dashboard.todayActivitiesCard.marked') 
+          : t('dashboard.todayActivitiesCard.unmarked')
+      );
+    } catch (error) {
+      console.error('Error updating activity:', error);
+      toast.error(t('dashboard.todayActivitiesCard.errorUpdating'));
+    }
+  };
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
-      case 'restorative':
+      case 'positive':
         return 'bg-accent';
-      case 'draining':
+      case 'negative':
         return 'bg-destructive';
       case 'neutral':
         return 'bg-muted';
@@ -30,6 +114,22 @@ const TodayActivitiesCard = () => {
         return 'bg-muted';
     }
   };
+
+  if (loading) {
+    return (
+      <Card className="p-lg space-y-md">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="space-y-sm">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full" />
+          ))}
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-lg space-y-md">
@@ -53,18 +153,23 @@ const TodayActivitiesCard = () => {
           {activities.map((activity, index) => (
             <div
               key={activity.id}
-              className="flex items-center gap-sm p-sm rounded-lg bg-muted/50 hover:bg-muted medium-transition ease-out-expo hover:scale-[1.01] animate-slide-in-right cursor-pointer"
+              className="flex items-center gap-sm p-sm rounded-lg bg-muted/50 hover:bg-muted medium-transition ease-out-expo hover:scale-[1.01] animate-slide-in-right"
               style={{ animationDelay: `calc(${index} * var(--animation-delay-xs))` }}
             >
-              <Checkbox checked={activity.completed} />
+              <Checkbox 
+                checked={activity.status === 'completed'} 
+                onCheckedChange={() => toggleComplete(activity.id, activity.status)}
+              />
               <div
-                className={`h-2 w-2 rounded-full ${getImpactColor(activity.impact)}`}
+                className={`h-2 w-2 rounded-full ${getImpactColor(activity.impact_type)}`}
               />
               <div className="flex-1">
-                <p className={`font-medium ${activity.completed ? 'line-through text-muted-foreground' : ''}`}>
-                  {activity.name}
+                <p className={`font-medium ${activity.status === 'completed' ? 'line-through text-muted-foreground' : ''}`}>
+                  {activity.title}
                 </p>
-                <p className="text-xs text-muted-foreground">{activity.time}</p>
+                <p className="text-xs text-muted-foreground">
+                  {activity.start_time ? activity.start_time.slice(0, 5) : t('dashboard.todayActivitiesCard.noTime')}
+                </p>
               </div>
             </div>
           ))}

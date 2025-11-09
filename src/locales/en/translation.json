@@ -87,7 +87,12 @@
       "add": "Add",
       "noActivities": "No activities planned for today",
       "planYourDay": "Plan Your Day",
-      "viewAll": "View all activities"
+      "viewAll": "View all activities",
+      "noTime": "Anytime",
+      "marked": "Activity marked as completed",
+      "unmarked": "Activity marked as planned",
+      "errorLoading": "Failed to load activities",
+      "errorUpdating": "Failed to update activity"
     },
     "quickStats": {
       "mood": "Mood",
