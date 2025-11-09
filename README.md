@@ -4911,6 +4911,1470 @@ const virtualizer = useVirtualizer({
    - Поддержка сообщества
    - Коллективные челленджи (streak challenges)
 
+## 🧪 Система тестов и упражнений
+
+### Обзор функциональности
+
+Система тестов и упражнений предоставляет пользователям инструменты для самооценки психологического состояния и практические упражнения для улучшения благополучия. Тесты позволяют измерить уровень тревожности, депрессии, стресса и других показателей, а упражнения помогают развивать навыки саморегуляции и эмоциональной устойчивости.
+
+**Ключевые возможности:**
+- 🧪 Валидированные психологические тесты
+- 📊 Автоматическая оценка и категоризация результатов
+- 📈 Отслеживание прогресса и истории тестирования
+- 🧘 Практические упражнения (дыхание, медитация, когнитивные техники)
+- ⏱️ Пошаговые инструкции с таймером
+- 💬 Рефлексия после выполнения упражнений
+- 📱 Адаптивный интерфейс для любых устройств
+
+### 🗄️ Структура данных тестов
+
+#### Таблица: tests
+
+Хранит определения психологических тестов и их конфигурацию.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.tests (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  name_en TEXT NOT NULL,
+  name_fr TEXT NOT NULL,
+  description TEXT,
+  description_en TEXT,
+  description_fr TEXT,
+  total_questions INTEGER NOT NULL,
+  duration_minutes INTEGER,
+  questions JSONB NOT NULL, -- Массив вопросов
+  scoring_info JSONB NOT NULL, -- Конфигурация оценки
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Index для быстрого поиска по slug
+CREATE INDEX idx_tests_slug ON tests(slug);
+
+-- RLS политики
+ALTER TABLE tests ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Tests are viewable by everyone"
+  ON tests
+  FOR SELECT
+  USING (true);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор теста
+- `slug` - URL-friendly идентификатор (например, 'gad-7', 'phq-9')
+- `name`, `name_en`, `name_fr` - многоязычные названия теста
+- `description`, `description_en`, `description_fr` - многоязычные описания
+- `total_questions` - общее количество вопросов
+- `duration_minutes` - ожидаемое время выполнения (опционально)
+- `questions` - JSONB массив с вопросами теста
+- `scoring_info` - JSONB объект с конфигурацией оценки результатов
+
+**Структура JSONB поля `questions`:**
+```json
+[
+  {
+    "id": 1,
+    "text": "Over the last 2 weeks, how often have you been bothered by feeling nervous, anxious, or on edge?",
+    "options": [
+      { "value": 0, "label": "Not at all" },
+      { "value": 1, "label": "Several days" },
+      { "value": 2, "label": "More than half the days" },
+      { "value": 3, "label": "Nearly every day" }
+    ]
+  },
+  {
+    "id": 2,
+    "text": "How often have you been bothered by not being able to stop or control worrying?",
+    "options": [
+      { "value": 0, "label": "Not at all" },
+      { "value": 1, "label": "Several days" },
+      { "value": 2, "label": "More than half the days" },
+      { "value": 3, "label": "Nearly every day" }
+    ]
+  }
+]
+```
+
+**Структура JSONB поля `scoring_info`:**
+```json
+{
+  "ranges": [
+    {
+      "min": 0,
+      "max": 4,
+      "category": "minimal",
+      "label": "Minimal Anxiety",
+      "description": "Your anxiety levels are low"
+    },
+    {
+      "min": 5,
+      "max": 9,
+      "category": "mild",
+      "label": "Mild Anxiety",
+      "description": "You're experiencing mild anxiety symptoms"
+    },
+    {
+      "min": 10,
+      "max": 14,
+      "category": "moderate",
+      "label": "Moderate Anxiety",
+      "description": "Consider speaking with a professional"
+    },
+    {
+      "min": 15,
+      "max": 21,
+      "category": "severe",
+      "label": "Severe Anxiety",
+      "description": "Strongly recommend professional support"
+    }
+  ]
+}
+```
+
+#### Таблица: test_results
+
+Хранит результаты прохождения тестов пользователями.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.test_results (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  test_id UUID NOT NULL REFERENCES tests(id),
+  score INTEGER NOT NULL,
+  max_score INTEGER NOT NULL,
+  category TEXT NOT NULL, -- 'minimal', 'mild', 'moderate', 'severe'
+  answers JSONB NOT NULL, -- Карта ответов { questionId: selectedValue }
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Индексы для быстрого доступа
+CREATE INDEX idx_test_results_user 
+  ON test_results(user_id, completed_at DESC);
+
+CREATE INDEX idx_test_results_test 
+  ON test_results(test_id, completed_at DESC);
+
+CREATE INDEX idx_test_results_user_test 
+  ON test_results(user_id, test_id, completed_at DESC);
+
+-- RLS политики
+ALTER TABLE test_results ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own results"
+  ON test_results
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор результата
+- `user_id` - ID пользователя
+- `test_id` - ID теста (FK к tests)
+- `score` - итоговый балл пользователя
+- `max_score` - максимально возможный балл для этого теста
+- `category` - категория результата ('minimal', 'mild', 'moderate', 'severe')
+- `answers` - JSONB объект с ответами пользователя
+- `completed_at` - время завершения теста
+
+**Структура JSONB поля `answers`:**
+```json
+{
+  "1": 2,  // questionId: selectedValue
+  "2": 1,
+  "3": 3,
+  "4": 0,
+  "5": 2,
+  "6": 1,
+  "7": 2
+}
+```
+
+### 🗄️ Структура данных упражнений
+
+#### Таблица: exercises
+
+Хранит определения практических упражнений.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.exercises (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  name_en TEXT NOT NULL,
+  name_fr TEXT NOT NULL,
+  description TEXT,
+  emoji TEXT NOT NULL,
+  category TEXT NOT NULL, -- 'grounding', 'stress', 'anxiety', 'cognitive'
+  difficulty TEXT NOT NULL, -- 'easy', 'medium', 'hard'
+  duration_minutes INTEGER NOT NULL,
+  effects TEXT[] NOT NULL, -- Массив эффектов
+  instructions JSONB NOT NULL, -- Пошаговые инструкции
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Index для быстрого поиска
+CREATE INDEX idx_exercises_slug ON exercises(slug);
+CREATE INDEX idx_exercises_category ON exercises(category);
+
+-- RLS политики
+ALTER TABLE exercises ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Exercises are viewable by everyone"
+  ON exercises
+  FOR SELECT
+  USING (true);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор упражнения
+- `slug` - URL-friendly идентификатор (например, '5-4-3-2-1', 'box-breathing')
+- `name`, `name_en`, `name_fr` - многоязычные названия
+- `description` - описание упражнения
+- `emoji` - эмодзи для визуального представления
+- `category` - категория ('grounding', 'stress', 'anxiety', 'cognitive')
+- `difficulty` - сложность ('easy', 'medium', 'hard')
+- `duration_minutes` - продолжительность в минутах
+- `effects` - массив строк с эффектами от упражнения
+- `instructions` - JSONB массив с пошаговыми инструкциями
+
+**Структура JSONB поля `instructions`:**
+```json
+[
+  {
+    "step": 1,
+    "title": "Get Comfortable",
+    "content": "Find a quiet place where you won't be disturbed. Sit or lie down in a comfortable position.",
+    "duration": 30
+  },
+  {
+    "step": 2,
+    "title": "Close Your Eyes",
+    "content": "Gently close your eyes and take a moment to settle into your body. Notice how you're feeling right now.",
+    "duration": 20
+  },
+  {
+    "step": 3,
+    "title": "Deep Breath In",
+    "content": "Slowly breathe in through your nose for 4 counts. Feel your belly expand as you fill your lungs with air.",
+    "duration": 4
+  },
+  {
+    "step": 4,
+    "title": "Hold",
+    "content": "Hold your breath gently for 4 counts. Don't strain - just pause naturally.",
+    "duration": 4
+  },
+  {
+    "step": 5,
+    "title": "Breathe Out",
+    "content": "Slowly exhale through your mouth for 4 counts. Feel the tension leaving your body.",
+    "duration": 4
+  },
+  {
+    "step": 6,
+    "title": "Continue",
+    "content": "Repeat this cycle 5-10 times. Notice how each breath helps you feel more calm and centered.",
+    "duration": 60
+  }
+]
+```
+
+#### Таблица: exercise_sessions
+
+Хранит записи о выполненных упражнениях.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.exercise_sessions (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  exercise_id UUID NOT NULL REFERENCES exercises(id),
+  duration_minutes INTEGER NOT NULL,
+  mood_before INTEGER, -- 1-10 scale (опционально)
+  mood_after INTEGER,  -- 1-10 scale (опционально)
+  notes TEXT,
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Индексы для аналитики
+CREATE INDEX idx_exercise_sessions_user 
+  ON exercise_sessions(user_id, completed_at DESC);
+
+CREATE INDEX idx_exercise_sessions_exercise 
+  ON exercise_sessions(exercise_id, completed_at DESC);
+
+CREATE INDEX idx_exercise_sessions_analytics 
+  ON exercise_sessions(user_id, completed_at DESC)
+  INCLUDE (exercise_id, duration_minutes, mood_before, mood_after);
+
+-- RLS политики
+ALTER TABLE exercise_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own sessions"
+  ON exercise_sessions
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор сессии
+- `user_id` - ID пользователя
+- `exercise_id` - ID упражнения (FK к exercises)
+- `duration_minutes` - фактическая продолжительность выполнения
+- `mood_before` - настроение до упражнения (1-10, опционально)
+- `mood_after` - настроение после упражнения (1-10, опционально)
+- `notes` - заметки пользователя (опционально)
+- `completed_at` - время завершения упражнения
+
+### 🧮 Алгоритмы оценки результатов тестов
+
+#### 1. Расчет итогового балла
+
+Простое суммирование всех выбранных значений:
+
+```typescript
+const calculateScore = (answers: { [key: number]: number }): number => {
+  return Object.values(answers).reduce((sum, value) => sum + value, 0);
+};
+
+// Пример использования:
+const answers = { 1: 2, 2: 1, 3: 3, 4: 0, 5: 2, 6: 1, 7: 2 };
+const score = calculateScore(answers); // Результат: 11
+```
+
+**Логика в компоненте TakeTest.tsx:**
+```typescript
+const submitTest = async () => {
+  const score = calculateScore(); // Суммируем все ответы
+  
+  // Рассчитываем максимально возможный балл
+  const maxScore = test.questions.reduce(
+    (max, q) => max + Math.max(...q.options.map(o => o.value)),
+    0
+  );
+  
+  const { category } = getCategory(score);
+  
+  // Сохраняем результат
+  await supabase.from('test_results').insert({
+    user_id: user.id,
+    test_id: test.id,
+    score,
+    max_score: maxScore,
+    category,
+    answers
+  });
+};
+```
+
+#### 2. Определение категории результата
+
+На основе итогового балла определяется категория по заданным диапазонам:
+
+```typescript
+const getCategory = (score: number) => {
+  if (!test) return { category: '', label: '' };
+  
+  // Найти диапазон, в который попадает балл
+  const range = test.scoring_info.ranges.find(
+    r => score >= r.min && score <= r.max
+  );
+  
+  return range || { category: '', label: '' };
+};
+
+// Пример:
+// Если score = 11, и диапазоны:
+// [0-4: minimal], [5-9: mild], [10-14: moderate], [15-21: severe]
+// Результат: { category: 'moderate', label: 'Moderate Anxiety' }
+```
+
+**Структура диапазонов:**
+```typescript
+interface ScoringRange {
+  min: number;        // Минимальный балл диапазона
+  max: number;        // Максимальный балл диапазона
+  category: string;   // Идентификатор категории
+  label: string;      // Человекочитаемый label
+  description?: string; // Дополнительное описание
+}
+
+// Пример для теста GAD-7:
+const ranges: ScoringRange[] = [
+  { min: 0, max: 4, category: 'minimal', label: 'Minimal Anxiety' },
+  { min: 5, max: 9, category: 'mild', label: 'Mild Anxiety' },
+  { min: 10, max: 14, category: 'moderate', label: 'Moderate Anxiety' },
+  { min: 15, max: 21, category: 'severe', label: 'Severe Anxiety' }
+];
+```
+
+#### 3. Вычисление процента от максимума
+
+```typescript
+const calculatePercentage = (score: number, maxScore: number): number => {
+  return Math.round((score / maxScore) * 100);
+};
+
+// Пример:
+const percentage = calculatePercentage(11, 21); // Результат: 52%
+```
+
+#### 4. Цветовая индикация результата
+
+```typescript
+const getCategoryColor = (category: string): string => {
+  if (category.includes('low') || category === 'minimal') {
+    return 'bg-green-500/10 text-green-500 border-green-500';
+  }
+  if (category.includes('moderate') || category === 'mild') {
+    return 'bg-yellow-500/10 text-yellow-500 border-yellow-500';
+  }
+  return 'bg-red-500/10 text-red-500 border-red-500';
+};
+
+// Соответствующий эмодзи
+const getEmoji = (category: string): string => {
+  if (category.includes('low') || category === 'minimal') return '😊';
+  if (category.includes('moderate') || category === 'mild') return '😐';
+  return '😟';
+};
+```
+
+#### 5. Генерация рекомендаций
+
+```typescript
+const getRecommendation = (category: string): string => {
+  if (category.includes('low') || category === 'minimal') {
+    return "Great! Your results indicate a healthy state. Continue with your current wellness practices.";
+  } else if (category.includes('moderate') || category === 'mild') {
+    return "Your results suggest moderate levels. Consider incorporating stress-reduction activities and monitoring your progress.";
+  } else {
+    return "Your results indicate high levels. Consider speaking with a mental health professional for personalized support.";
+  }
+};
+```
+
+### 📱 Компоненты для прохождения тестов
+
+#### 1. Tests.tsx (Список тестов)
+
+**Расположение:** `src/pages/Tests.tsx`
+
+**Функциональность:**
+- Отображение всех доступных тестов в виде карточек
+- Показ последних результатов пользователя
+- Навигация к детальной странице теста или повторному прохождению
+
+**Основные функции:**
+
+```typescript
+const loadTests = async () => {
+  // 1. Загрузить все тесты
+  const { data: testsData } = await supabase
+    .from('tests')
+    .select('*')
+    .order('created_at');
+  
+  setTests(testsData);
+  
+  // 2. Загрузить последние результаты для каждого теста
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const results: { [key: string]: LastResult } = {};
+  for (const test of testsData) {
+    const { data } = await supabase
+      .from('test_results')
+      .select('completed_at, category, score')
+      .eq('user_id', user.id)
+      .eq('test_id', test.id)
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (data) results[test.id] = data;
+  }
+  
+  setLastResults(results);
+};
+```
+
+**UI элементы:**
+```tsx
+<Card onClick={() => navigate(`/tests/${test.slug}`)}>
+  <h3>{test.name_en}</h3>
+  <p>{test.description_en}</p>
+  
+  <div className="flex gap-2">
+    <Badge>
+      <Clock /> {test.duration_minutes} min
+    </Badge>
+    <Badge>
+      <FileText /> {test.total_questions} questions
+    </Badge>
+  </div>
+  
+  {lastResult && (
+    <div>
+      <p>Last taken: {new Date(lastResult.completed_at).toLocaleDateString()}</p>
+      <Badge className={getCategoryColor(lastResult.category)}>
+        Score: {lastResult.score}
+      </Badge>
+    </div>
+  )}
+  
+  <Button variant={lastResult ? 'secondary' : 'default'}>
+    {lastResult ? 'Take Again' : 'Take Test'}
+  </Button>
+</Card>
+```
+
+#### 2. TestDetail.tsx (Детальная информация о тесте)
+
+**Расположение:** `src/pages/TestDetail.tsx`
+
+**Функциональность:**
+- Отображение полной информации о тесте
+- История прошлых результатов пользователя
+- График прогресса (если есть несколько результатов)
+- Кнопка начала нового прохождения
+
+**Основные функции:**
+
+```typescript
+const loadTestDetails = async () => {
+  // Загрузить информацию о тесте
+  const { data: testData } = await supabase
+    .from('tests')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  
+  setTest(testData);
+  
+  // Загрузить историю результатов пользователя
+  const { data: resultsData } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('test_id', testData.id)
+    .order('completed_at', { ascending: false })
+    .limit(10);
+  
+  setResults(resultsData);
+};
+```
+
+#### 3. TakeTest.tsx (Прохождение теста)
+
+**Расположение:** `src/pages/TakeTest.tsx`
+
+**Функциональность:**
+- Пошаговое прохождение вопросов теста
+- Индикатор прогресса
+- Валидация ответов
+- Сохранение результатов
+
+**State management:**
+```typescript
+const [test, setTest] = useState<Test | null>(null);
+const [currentQuestion, setCurrentQuestion] = useState(0); // Текущий вопрос (0-indexed)
+const [answers, setAnswers] = useState<{ [key: number]: number }>({}); // Карта ответов
+const [isSubmitting, setIsSubmitting] = useState(false);
+```
+
+**Навигация по вопросам:**
+```typescript
+const handleAnswer = (value: number) => {
+  if (!test) return;
+  
+  // Сохранить ответ на текущий вопрос
+  setAnswers({
+    ...answers,
+    [test.questions[currentQuestion].id]: value
+  });
+};
+
+const goToNext = () => {
+  if (!test) return;
+  if (currentQuestion < test.questions.length - 1) {
+    setCurrentQuestion(currentQuestion + 1);
+  }
+};
+
+const goToPrevious = () => {
+  if (currentQuestion > 0) {
+    setCurrentQuestion(currentQuestion - 1);
+  }
+};
+```
+
+**Отправка результатов:**
+```typescript
+const submitTest = async () => {
+  if (!test) return;
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast({ title: 'Please log in to save your results', variant: 'destructive' });
+    return;
+  }
+  
+  setIsSubmitting(true);
+  
+  // Рассчитать балл
+  const score = calculateScore();
+  const maxScore = test.questions.reduce(
+    (max, q) => max + Math.max(...q.options.map(o => o.value)),
+    0
+  );
+  const { category } = getCategory(score);
+  
+  // Сохранить результат
+  const { data, error } = await supabase
+    .from('test_results')
+    .insert({
+      user_id: user.id,
+      test_id: test.id,
+      score,
+      max_score: maxScore,
+      category,
+      answers: answers
+    })
+    .select()
+    .single();
+  
+  if (error) {
+    toast({ title: 'Error saving results', variant: 'destructive' });
+    setIsSubmitting(false);
+    return;
+  }
+  
+  toast({ title: 'Test completed!' });
+  navigate(`/tests/${slug}/results/${data.id}`);
+};
+```
+
+**UI компонента:**
+```tsx
+<div className="space-y-6">
+  {/* Header с навигацией */}
+  <div className="flex items-center justify-between">
+    <Button variant="ghost" onClick={() => navigate(`/tests/${slug}`)}>
+      <ArrowLeft />
+    </Button>
+    <span>Question {currentQuestion + 1} of {test.questions.length}</span>
+  </div>
+  
+  {/* Progress Bar */}
+  <Progress value={((currentQuestion + 1) / test.questions.length) * 100} />
+  
+  {/* Question Card */}
+  <Card>
+    <h2>{question.text}</h2>
+    <RadioGroup
+      value={answers[question.id]?.toString()}
+      onValueChange={(value) => handleAnswer(parseInt(value))}
+    >
+      {question.options.map((option, index) => (
+        <div key={index} onClick={() => handleAnswer(option.value)}>
+          <RadioGroupItem value={option.value.toString()} />
+          <Label>{option.label}</Label>
+        </div>
+      ))}
+    </RadioGroup>
+  </Card>
+  
+  {/* Navigation */}
+  <div className="flex justify-between">
+    <Button onClick={goToPrevious} disabled={currentQuestion === 0}>
+      <ArrowLeft /> Previous
+    </Button>
+    
+    {isLastQuestion ? (
+      <Button onClick={submitTest} disabled={!allAnswered || isSubmitting}>
+        {isSubmitting ? 'Submitting...' : 'Submit Test'}
+      </Button>
+    ) : (
+      <Button onClick={goToNext} disabled={!isAnswered}>
+        Next <ArrowRight />
+      </Button>
+    )}
+  </div>
+</div>
+```
+
+#### 4. TestResult.tsx (Результаты теста)
+
+**Расположение:** `src/pages/TestResult.tsx`
+
+**Функциональность:**
+- Отображение итогового балла и категории
+- Интерпретация результатов
+- Рекомендации на основе результата
+- Опции для повторного прохождения или просмотра истории
+
+**Основные функции:**
+
+```typescript
+const loadResult = async () => {
+  // Загрузить результат
+  const { data: resultData } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('id', resultId)
+    .single();
+  
+  setResult(resultData);
+  
+  // Загрузить информацию о тесте
+  const { data: testData } = await supabase
+    .from('tests')
+    .select('*')
+    .eq('id', resultData.test_id)
+    .single();
+  
+  setTest(testData);
+};
+
+const getCategoryDetails = () => {
+  if (!test || !result) return null;
+  
+  return test.scoring_info.ranges.find(
+    r => r.category === result.category
+  );
+};
+```
+
+**UI компонента:**
+```tsx
+<div className="space-y-6">
+  {/* Header */}
+  <div>
+    <h1>{test.name_en}</h1>
+    <p>Completed on {new Date(result.completed_at).toLocaleDateString()}</p>
+  </div>
+  
+  {/* Score Display */}
+  <Card className="text-center">
+    <div className="text-6xl">{getEmoji(result.category)}</div>
+    <div className="text-5xl font-bold">
+      {result.score}
+      <span className="text-2xl text-muted-foreground">/{result.max_score}</span>
+    </div>
+    <p>{percentage}%</p>
+    <Badge className={getCategoryColor(result.category)}>
+      {categoryDetails.label}
+    </Badge>
+  </Card>
+  
+  {/* Interpretation */}
+  <Card>
+    <h3>What This Means</h3>
+    <p>{getRecommendation()}</p>
+  </Card>
+  
+  {/* Recommended Activities */}
+  <Card>
+    <h3>Recommended Next Steps</h3>
+    <ul>
+      <li>Schedule regular check-ins with yourself using the journal feature</li>
+      <li>Track your daily activities and their impact on your wellbeing</li>
+      <li>Retake this test periodically to monitor your progress</li>
+    </ul>
+  </Card>
+  
+  {/* Actions */}
+  <div className="flex gap-3">
+    <Button onClick={handleRetake}>
+      <RefreshCw /> Take Again
+    </Button>
+    <Button onClick={handleShare} variant="outline">
+      <Share2 /> Share
+    </Button>
+    <Button onClick={() => navigate(`/tests/${slug}/history`)} variant="outline">
+      View History
+    </Button>
+  </div>
+  
+  {/* Disclaimer */}
+  <p className="text-xs text-muted-foreground">
+    This assessment is for informational purposes only and does not replace professional medical advice.
+  </p>
+</div>
+```
+
+### 🧘 Компоненты для упражнений
+
+#### 1. Exercises.tsx (Список упражнений)
+
+**Расположение:** `src/pages/Exercises.tsx`
+
+**Функциональность:**
+- Отображение всех доступных упражнений
+- Фильтрация по категориям (grounding, stress, anxiety, cognitive)
+- Поиск по названию и эффектам
+- Индикация сложности
+
+**Основные функции:**
+
+```typescript
+const loadExercises = async () => {
+  const { data } = await supabase
+    .from('exercises')
+    .select('*')
+    .order('category');
+  
+  setExercises(data);
+};
+
+const filterExercises = () => {
+  let filtered = [...exercises];
+  
+  // Фильтр по категории
+  if (categoryFilter !== 'all') {
+    filtered = filtered.filter(ex => ex.category === categoryFilter);
+  }
+  
+  // Поиск
+  if (searchQuery.trim()) {
+    filtered = filtered.filter(ex =>
+      ex.name_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      ex.effects.some(effect => effect.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }
+  
+  setFilteredExercises(filtered);
+};
+
+const getDifficultyDots = (difficulty: string): string => {
+  const count = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
+  return '•'.repeat(count);
+};
+```
+
+**UI компонента:**
+```tsx
+<div className="space-y-6">
+  {/* Search */}
+  <Input
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    placeholder="Search exercises..."
+  />
+  
+  {/* Category Tabs */}
+  <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
+    <TabsList>
+      <TabsTrigger value="all">All</TabsTrigger>
+      <TabsTrigger value="grounding">Grounding</TabsTrigger>
+      <TabsTrigger value="stress">Stress Relief</TabsTrigger>
+      <TabsTrigger value="anxiety">Anxiety</TabsTrigger>
+      <TabsTrigger value="cognitive">Cognitive</TabsTrigger>
+    </TabsList>
+  </Tabs>
+  
+  {/* Exercises Grid */}
+  <div className="grid grid-cols-3 gap-4">
+    {filteredExercises.map((exercise) => (
+      <Card onClick={() => navigate(`/exercises/${exercise.slug}`)}>
+        <div className="text-5xl">{exercise.emoji}</div>
+        <h3>{exercise.name_en}</h3>
+        
+        <div className="flex items-center gap-2">
+          <Badge>{getCategoryLabel(exercise.category)}</Badge>
+          <span>{getDifficultyDots(exercise.difficulty)}</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Clock /> {exercise.duration_minutes} min
+        </div>
+        
+        <div>
+          {exercise.effects.slice(0, 2).map((effect) => (
+            <p key={effect}>• {effect}</p>
+          ))}
+        </div>
+        
+        <Button>Start</Button>
+      </Card>
+    ))}
+  </div>
+</div>
+```
+
+#### 2. ExerciseDetail.tsx (Детали упражнения)
+
+**Расположение:** `src/pages/ExerciseDetail.tsx`
+
+**Функциональность:**
+- Полное описание упражнения
+- Список эффектов
+- История выполнения пользователя
+- Кнопка начала практики
+
+#### 3. ExerciseSession.tsx (Выполнение упражнения)
+
+**Расположение:** `src/pages/ExerciseSession.tsx`
+
+**Функциональность:**
+- Пошаговое руководство по упражнению
+- Индикатор прогресса
+- Таймер для каждого шага (опционально)
+- Рефлексия после завершения
+
+**State management:**
+```typescript
+const [exercise, setExercise] = useState<Exercise | null>(null);
+const [currentStep, setCurrentStep] = useState(0); // Текущий шаг
+const [showExitDialog, setShowExitDialog] = useState(false);
+const [isCompleted, setIsCompleted] = useState(false);
+const [moodAfter, setMoodAfter] = useState<number[]>([5]); // Настроение после (1-10)
+const [notes, setNotes] = useState(''); // Заметки пользователя
+const [startTime, setStartTime] = useState(Date.now()); // Время начала
+```
+
+**Навигация по шагам:**
+```typescript
+const handleNext = () => {
+  if (!exercise) return;
+  
+  if (currentStep < exercise.instructions.length - 1) {
+    setCurrentStep(currentStep + 1);
+  } else {
+    setIsCompleted(true); // Переход к экрану завершения
+  }
+};
+
+const handlePrevious = () => {
+  if (currentStep > 0) {
+    setCurrentStep(currentStep - 1);
+  }
+};
+
+const handleExit = () => {
+  setShowExitDialog(true); // Подтверждение выхода
+};
+```
+
+**Сохранение сессии:**
+```typescript
+const handleComplete = async () => {
+  if (!exercise) return;
+  
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  
+  // Рассчитать фактическую продолжительность
+  const durationMinutes = Math.round((Date.now() - startTime) / 60000);
+  
+  // Сохранить сессию
+  const { error } = await supabase
+    .from('exercise_sessions')
+    .insert({
+      user_id: user.id,
+      exercise_id: exercise.id,
+      duration_minutes: durationMinutes,
+      mood_after: moodAfter[0],
+      notes: notes.trim() || null
+    });
+  
+  if (error) {
+    console.error('Error saving session:', error);
+    return;
+  }
+  
+  toast({ 
+    title: 'Exercise completed!',
+    description: 'Great work on your practice.'
+  });
+  
+  navigate('/exercises');
+};
+```
+
+**UI компонента (основной экран):**
+```tsx
+<div className="min-h-screen">
+  {/* Header */}
+  <div className="sticky top-0 bg-background border-b p-4">
+    <div className="flex items-center justify-between">
+      <Button variant="ghost" onClick={handleExit}>
+        <X />
+      </Button>
+      <span>Step {currentStep + 1} of {exercise.instructions.length}</span>
+      <div /> {/* Spacer */}
+    </div>
+  </div>
+  
+  {/* Progress */}
+  <Progress value={((currentStep + 1) / exercise.instructions.length) * 100} />
+  
+  {/* Content */}
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <Card className="p-12 text-center">
+      <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto">
+        {instruction.step}
+      </div>
+      
+      <h2 className="text-4xl font-bold mt-8">{instruction.title}</h2>
+      <p className="text-xl text-muted-foreground mt-4">{instruction.content}</p>
+      
+      {instruction.duration && (
+        <p className="text-sm text-muted-foreground mt-6">
+          Take about {instruction.duration} seconds
+        </p>
+      )}
+    </Card>
+  </div>
+  
+  {/* Navigation */}
+  <div className="flex justify-between gap-4 p-8">
+    <Button onClick={handlePrevious} disabled={currentStep === 0}>
+      <ArrowLeft /> Previous
+    </Button>
+    <Button onClick={handleNext}>
+      {currentStep === exercise.instructions.length - 1 ? 'Complete' : 'Next'}
+      <ArrowRight />
+    </Button>
+  </div>
+  
+  {/* Exit Dialog */}
+  <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Exit exercise?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Your progress will not be saved if you exit now.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Continue Exercise</AlertDialogCancel>
+        <AlertDialogAction onClick={confirmExit}>Exit</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+</div>
+```
+
+**UI компонента (экран завершения):**
+```tsx
+{isCompleted && (
+  <div className="min-h-screen flex items-center justify-center">
+    <Card className="max-w-md p-8 space-y-6">
+      <div className="text-center space-y-4">
+        <div className="text-6xl">{exercise.emoji}</div>
+        <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
+        <h2 className="text-2xl font-bold">Well Done!</h2>
+        <p>You've completed {exercise.name_en}</p>
+      </div>
+      
+      {/* Mood Slider */}
+      <div className="space-y-2">
+        <Label>How do you feel now? (1-10)</Label>
+        <div className="flex items-center gap-4">
+          <span className="text-2xl">😟</span>
+          <Slider
+            value={moodAfter}
+            onValueChange={setMoodAfter}
+            min={1}
+            max={10}
+            step={1}
+          />
+          <span className="text-2xl">😊</span>
+        </div>
+        <p className="text-center font-medium">{moodAfter[0]}/10</p>
+      </div>
+      
+      {/* Notes */}
+      <div className="space-y-2">
+        <Label>Notes (optional)</Label>
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="How was this practice for you?"
+          rows={3}
+        />
+      </div>
+      
+      {/* Actions */}
+      <div className="space-y-2">
+        <Button onClick={handleComplete} className="w-full">Done</Button>
+        <Button
+          variant="outline"
+          onClick={() => navigate('/journal')}
+          className="w-full"
+        >
+          Add to Journal
+        </Button>
+      </div>
+    </Card>
+  </div>
+)}
+```
+
+### 📊 Интеграция с другими модулями
+
+#### 1. Связь с Dashboard
+
+На главной странице Dashboard могут отображаться:
+- Недавние результаты тестов
+- Рекомендации пройти определенный тест на основе трекеров
+- Статистика выполненных упражнений за неделю
+
+```typescript
+// Пример компонента на Dashboard
+const RecentTestsWidget = () => {
+  const [recentResults, setRecentResults] = useState([]);
+  
+  useEffect(() => {
+    loadRecentResults();
+  }, []);
+  
+  const loadRecentResults = async () => {
+    const { data } = await supabase
+      .from('test_results')
+      .select('*, tests(*)')
+      .eq('user_id', user.id)
+      .order('completed_at', { ascending: false })
+      .limit(3);
+    
+    setRecentResults(data);
+  };
+  
+  return (
+    <Card>
+      <h3>Recent Test Results</h3>
+      {recentResults.map((result) => (
+        <div key={result.id}>
+          <span>{result.tests.name_en}</span>
+          <Badge className={getCategoryColor(result.category)}>
+            {result.category}
+          </Badge>
+          <span>{new Date(result.completed_at).toLocaleDateString()}</span>
+        </div>
+      ))}
+    </Card>
+  );
+};
+```
+
+#### 2. Связь с системой рекомендаций
+
+Edge Function `generate-recommendations` может анализировать результаты тестов и предлагать:
+- Релевантные упражнения на основе категории результата
+- Активности для улучшения показателей
+
+```typescript
+// Пример логики в Edge Function
+if (testResult.category === 'moderate' || testResult.category === 'severe') {
+  // Рекомендовать упражнения из категории, соответствующей тесту
+  const recommendedExercises = await supabase
+    .from('exercises')
+    .select('*')
+    .eq('category', 'anxiety') // Если тест был на тревожность
+    .order('difficulty');
+  
+  // Создать рекомендации для пользователя
+  // ...
+}
+```
+
+#### 3. Связь с Journal
+
+Пользователи могут:
+- Записать свои мысли о результатах теста в журнал
+- Отразить свой опыт после выполнения упражнения
+
+```typescript
+// Кнопка "Add to Journal" в ExerciseSession
+<Button onClick={() => navigate('/journal')}>
+  Add to Journal
+</Button>
+
+// В Journal можно автоматически добавить контекст:
+const journalContext = {
+  type: 'exercise_reflection',
+  exercise_id: exercise.id,
+  exercise_name: exercise.name_en,
+  mood_after: moodAfter[0]
+};
+```
+
+#### 4. Связь с Insights
+
+На странице Insights могут отображаться:
+- Корреляция между выполнением упражнений и настроением
+- Динамика результатов тестов во времени
+- Эффективность различных типов упражнений
+
+```typescript
+// Пример анализа для Insights
+const analyzeExerciseImpact = async () => {
+  const { data: sessions } = await supabase
+    .from('exercise_sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .not('mood_before', 'is', null)
+    .not('mood_after', 'is', null);
+  
+  // Рассчитать среднее улучшение настроения
+  const avgImprovement = sessions.reduce((sum, s) => {
+    return sum + (s.mood_after - s.mood_before);
+  }, 0) / sessions.length;
+  
+  return avgImprovement;
+};
+```
+
+### 🎨 Дизайн и UX
+
+#### Цветовая схема для категорий
+
+```typescript
+const CATEGORY_COLORS = {
+  minimal: {
+    bg: 'bg-green-500/10',
+    text: 'text-green-500',
+    border: 'border-green-500',
+    emoji: '😊'
+  },
+  mild: {
+    bg: 'bg-yellow-500/10',
+    text: 'text-yellow-500',
+    border: 'border-yellow-500',
+    emoji: '😐'
+  },
+  moderate: {
+    bg: 'bg-orange-500/10',
+    text: 'text-orange-500',
+    border: 'border-orange-500',
+    emoji: '😕'
+  },
+  severe: {
+    bg: 'bg-red-500/10',
+    text: 'text-red-500',
+    border: 'border-red-500',
+    emoji: '😟'
+  }
+};
+
+const EXERCISE_CATEGORIES = {
+  grounding: {
+    label: 'Grounding',
+    color: 'bg-blue-500/10 text-blue-500',
+    icon: '🌍'
+  },
+  stress: {
+    label: 'Stress Relief',
+    color: 'bg-purple-500/10 text-purple-500',
+    icon: '🧘'
+  },
+  anxiety: {
+    label: 'Anxiety',
+    color: 'bg-teal-500/10 text-teal-500',
+    icon: '🌊'
+  },
+  cognitive: {
+    label: 'Cognitive',
+    color: 'bg-indigo-500/10 text-indigo-500',
+    icon: '🧠'
+  }
+};
+```
+
+#### Анимации и переходы
+
+```css
+/* Плавные переходы между вопросами/шагами */
+.question-transition {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Пульсация кнопки "Next" для привлечения внимания */
+.pulse-button {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+```
+
+#### Адаптивность
+
+- **Desktop:** Широкие карточки, много информации на экране
+- **Tablet:** Двухколоночная раскладка для тестов/упражнений
+- **Mobile:** Одноколоночная раскладка, крупные touch-таргеты (минимум 44x44px)
+
+```tsx
+<div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  {/* Автоматическая адаптация */}
+</div>
+```
+
+### 🔒 Безопасность и валидация
+
+#### 1. Валидация ответов на клиенте
+
+```typescript
+// Проверка, что все вопросы отвечены перед отправкой
+const allAnswered = Object.keys(answers).length === test.questions.length;
+
+<Button onClick={submitTest} disabled={!allAnswered || isSubmitting}>
+  Submit Test
+</Button>
+```
+
+#### 2. RLS политики
+
+Все таблицы защищены RLS:
+- `tests` и `exercises` - публичное чтение
+- `test_results` и `exercise_sessions` - только свои записи
+
+#### 3. Защита от манипуляций
+
+Расчет балла происходит на клиенте, но можно добавить валидацию на уровне БД:
+
+```sql
+-- Триггер для валидации score
+CREATE OR REPLACE FUNCTION validate_test_score()
+RETURNS TRIGGER AS $$
+DECLARE
+  max_possible_score INTEGER;
+BEGIN
+  -- Получить максимальный балл из конфигурации теста
+  SELECT (
+    SELECT MAX((option->>'value')::INTEGER)
+    FROM tests t,
+    LATERAL jsonb_array_elements(t.questions) AS question,
+    LATERAL jsonb_array_elements(question->'options') AS option
+    WHERE t.id = NEW.test_id
+  ) * (
+    SELECT jsonb_array_length(questions)
+    FROM tests
+    WHERE id = NEW.test_id
+  ) INTO max_possible_score;
+  
+  -- Проверить, что балл не превышает максимальный
+  IF NEW.score > max_possible_score THEN
+    RAISE EXCEPTION 'Invalid score: % exceeds max possible score: %', 
+      NEW.score, max_possible_score;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validate_score_before_insert
+  BEFORE INSERT ON test_results
+  FOR EACH ROW
+  EXECUTE FUNCTION validate_test_score();
+```
+
+### 🚀 Оптимизация производительности
+
+#### 1. Кэширование тестов и упражнений
+
+```typescript
+// Использование TanStack Query для кэширования
+const { data: tests, isLoading } = useQuery({
+  queryKey: ['tests'],
+  queryFn: async () => {
+    const { data } = await supabase.from('tests').select('*');
+    return data;
+  },
+  staleTime: 1000 * 60 * 60, // 1 час
+  cacheTime: 1000 * 60 * 60 * 24, // 24 часа
+});
+```
+
+#### 2. Индексы базы данных
+
+```sql
+-- Индексы для быстрого поиска
+CREATE INDEX idx_tests_slug ON tests(slug);
+CREATE INDEX idx_exercises_slug ON exercises(slug);
+CREATE INDEX idx_exercises_category ON exercises(category);
+
+-- Индексы для аналитики
+CREATE INDEX idx_test_results_user_test 
+  ON test_results(user_id, test_id, completed_at DESC);
+
+CREATE INDEX idx_exercise_sessions_analytics 
+  ON exercise_sessions(user_id, completed_at DESC)
+  INCLUDE (exercise_id, duration_minutes, mood_before, mood_after);
+```
+
+#### 3. Ленивая загрузка компонентов
+
+```typescript
+// Lazy loading страниц
+const TakeTest = lazy(() => import('@/pages/TakeTest'));
+const ExerciseSession = lazy(() => import('@/pages/ExerciseSession'));
+
+// В Router
+<Suspense fallback={<PageLoader />}>
+  <Route path="/tests/:slug/take" element={<TakeTest />} />
+  <Route path="/exercises/:slug/session" element={<ExerciseSession />} />
+</Suspense>
+```
+
+### 🔮 Будущие улучшения
+
+1. **Адаптивные тесты:**
+   - CAT (Computerized Adaptive Testing) - динамическая подстройка вопросов на основе предыдущих ответов
+   - Сокращение количества вопросов при сохранении точности
+
+2. **Расширенная аналитика:**
+   - Тренды результатов тестов во времени (графики)
+   - Корреляция между тестами и трекерами настроения
+   - Прогнозирование будущих состояний на основе ML
+
+3. **Социальные функции:**
+   - Анонимное сравнение с другими пользователями (нормы)
+   - Групповые упражнения (синхронные сессии)
+
+4. **Персонализация упражнений:**
+   - Адаптация инструкций на основе предпочтений пользователя
+   - Создание кастомных последовательностей упражнений
+   - Напоминания о практике в оптимальное время
+
+5. **Мультимедиа:**
+   - Голосовое сопровождение упражнений (text-to-speech)
+   - Фоновая музыка или звуки природы
+   - Видео-демонстрации сложных техник
+
+6. **Интеграция с wearables:**
+   - Синхронизация с Apple Health / Google Fit
+   - Отслеживание HRV (Heart Rate Variability) во время упражнений
+   - Автоматическое предложение упражнений на основе физиологических данных
+
+7. **Сертификация и геймификация:**
+   - Бейджи за регулярное прохождение тестов
+   - Достижения за серии выполнения упражнений
+   - Уровни мастерства в различных техниках
+
 ## 📦 Установка и запуск
 
 ### Требования
