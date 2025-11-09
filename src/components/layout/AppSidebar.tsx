@@ -68,17 +68,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-border">
-      <SidebarHeader className="border-b border-border p-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl shrink-0">
-            <Brain className="h-5 w-5 text-primary" />
-          </div>
-          {!collapsed && (
-            <span className="font-semibold text-lg">{t('app.name')}</span>
-          )}
-        </div>
-      </SidebarHeader>
-
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={cn(collapsed && "opacity-0")}>
