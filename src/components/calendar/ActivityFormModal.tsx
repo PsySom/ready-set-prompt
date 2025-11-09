@@ -33,7 +33,8 @@ const activitySchema = z.object({
   description: z.string()
     .max(1000, { message: 'Description must be less than 1000 characters' })
     .optional(),
-  duration_minutes: z.number()
+  duration_minutes: z.coerce.number()
+    .int()
     .min(5, { message: 'Duration must be at least 5 minutes' })
     .max(1440, { message: 'Duration cannot exceed 24 hours' }),
 });
@@ -107,11 +108,12 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity, e
     if (!user) return;
 
     // Validate form data
+    const safeDuration = Number.isFinite(Number(formData.duration_minutes)) ? Number(formData.duration_minutes) : 60;
     try {
       activitySchema.parse({
         title: formData.title,
         description: formData.description,
-        duration_minutes: formData.duration_minutes,
+        duration_minutes: safeDuration,
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -135,7 +137,7 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity, e
       date: format(formData.date, 'yyyy-MM-dd'),
       start_time: formData.anytime ? null : formData.start_time,
       end_time: null,
-      duration_minutes: formData.duration_minutes,
+      duration_minutes: safeDuration,
       is_recurring: formData.is_recurring,
       recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
       reminder_enabled: formData.reminder_enabled,
