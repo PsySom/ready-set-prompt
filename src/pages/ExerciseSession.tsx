@@ -43,6 +43,7 @@ const ExerciseSession = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { getLocalizedField } = useLocale();
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -146,7 +147,7 @@ const ExerciseSession = () => {
               {t('exercises.wellDone')}
             </h2>
             <p className="text-muted-foreground">
-              {t('exercises.youCompleted')} {exercise.name_en}
+              {t('exercises.youCompleted')} {getLocalizedField(exercise, 'name')}
             </p>
           </div>
 
@@ -229,10 +230,10 @@ const ExerciseSession = () => {
 
             <div className="space-y-4">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                {instruction.title}
+                {getLocalizedField(instruction, 'title')}
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                {instruction.content}
+                {getLocalizedField(instruction, 'content')}
               </p>
             </div>
 
