@@ -81,10 +81,10 @@ const Dashboard = () => {
         
         {/* Main Content Grid - 2 columns on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg md:gap-xl">
-          {/* Left Column - Tracker and Activities */}
+          {/* Left Column - Activities and Tracker */}
           <div className="lg:col-span-2 space-y-lg">
-            <QuickTrackerCard onEntrySaved={handleEntrySaved} />
             <TodayActivitiesCard />
+            <QuickTrackerCard onEntrySaved={handleEntrySaved} />
             
             {/* Links to other pages */}
             <div className="flex gap-sm">
