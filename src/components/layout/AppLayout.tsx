@@ -25,8 +25,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
+      <div className="flex min-h-screen w-full bg-background pb-20 md:pb-0">
+        <div className="hidden md:block">
+          <AppSidebar />
+        </div>
         <SidebarInset className="flex-1">
           <AppHeader />
           <main className="flex-1 px-6 py-6">
@@ -35,6 +37,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             </div>
           </main>
         </SidebarInset>
+        {/* Ensure bottom nav is rendered on small screens even in desktop layout */}
+        <BottomNav />
       </div>
     </SidebarProvider>
   );
