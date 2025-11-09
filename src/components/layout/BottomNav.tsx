@@ -17,7 +17,7 @@ export const BottomNav = () => {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-area-bottom md:hidden"
       role="navigation"
       aria-label="Main navigation"
     >

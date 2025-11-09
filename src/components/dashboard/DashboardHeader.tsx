@@ -24,21 +24,21 @@ const DashboardHeader = () => {
   return (
     <header className="flex items-center justify-between">
       {/* Logo */}
-      <div className="flex items-center gap-2">
-        <div className="p-2 bg-primary/10 rounded-xl">
-          <Brain className="h-6 w-6 text-primary" />
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="p-2 md:p-3 bg-primary/10 rounded-xl">
+          <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
         </div>
-        <span className="font-semibold text-lg hidden sm:inline">{t('app.name')}</span>
+        <span className="font-semibold text-base md:text-lg lg:text-xl">{t('app.name')}</span>
       </div>
 
       {/* Date */}
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">{dateString}</p>
+      <div className="text-center hidden md:block">
+        <p className="text-sm md:text-base text-muted-foreground">{dateString}</p>
       </div>
 
       {/* Profile Avatar */}
       <Avatar 
-        className="cursor-pointer hover:ring-2 hover:ring-primary smooth-transition"
+        className="cursor-pointer hover:ring-2 hover:ring-primary smooth-transition h-9 w-9 md:h-10 md:w-10"
         onClick={() => navigate('/profile')}
       >
         <AvatarImage src={user?.user_metadata?.avatar_url} />

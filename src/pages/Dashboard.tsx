@@ -76,35 +76,51 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="p-6 space-y-6">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         <DashboardHeader />
         
-        <QuickTrackerCard onEntrySaved={handleEntrySaved} />
-        
-        <TodayActivitiesCard />
-        
-        <QuickStatsCard entriesCount={todayEntries.length} />
-        
-        {/* Links to other pages */}
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => navigate('/tracker-history')}
-          >
-            {t('dashboard.viewTrackerHistory')}
-          </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1 gap-2"
-            onClick={() => navigate('/activity-templates')}
-          >
-            <Library className="h-4 w-4" />
-            {t('dashboard.activityTemplates')}
-          </Button>
+        {/* Main Content Grid - 2 columns on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+          {/* Left Column - Tracker and Activities */}
+          <div className="lg:col-span-2 space-y-6">
+            <QuickTrackerCard onEntrySaved={handleEntrySaved} />
+            <TodayActivitiesCard />
+            
+            {/* Links to other pages */}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate('/tracker-history')}
+              >
+                {t('dashboard.viewTrackerHistory')}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1 gap-2"
+                onClick={() => navigate('/activity-templates')}
+              >
+                <Library className="h-4 w-4" />
+                {t('dashboard.activityTemplates')}
+              </Button>
+            </div>
+            
+            <div className="lg:hidden">
+              <InsightsPreview />
+            </div>
+          </div>
+          
+          {/* Right Column - Stats and Insights (Desktop only) */}
+          <div className="hidden lg:block space-y-6">
+            <QuickStatsCard entriesCount={todayEntries.length} />
+            <InsightsPreview />
+          </div>
         </div>
         
-        <InsightsPreview />
+        {/* Mobile/Tablet Stats */}
+        <div className="lg:hidden">
+          <QuickStatsCard entriesCount={todayEntries.length} />
+        </div>
       </div>
     </AppLayout>
   );
