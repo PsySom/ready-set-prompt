@@ -227,6 +227,7 @@
       "descriptionPlaceholder": "Ajoutez des détails sur cette activité...",
       "category": "Catégorie",
       "date": "Date",
+      "anytime": "N'importe quand",
       "activityType": "Type d'activité",
       "endTime": "Heure de fin",
       "allDay": "Événement toute la journée",

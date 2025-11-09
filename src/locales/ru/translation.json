@@ -227,6 +227,7 @@
       "descriptionPlaceholder": "Добавьте детали об этой активности...",
       "category": "Категория",
       "date": "Дата",
+      "anytime": "В любое время",
       "activityType": "Типы активности",
       "endTime": "Время окончания",
       "allDay": "Весь день",

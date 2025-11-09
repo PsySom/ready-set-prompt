@@ -227,6 +227,7 @@
       "descriptionPlaceholder": "Add details about this activity...",
       "category": "Category",
       "date": "Date",
+      "anytime": "Anytime",
       "activityType": "Activity Type",
       "endTime": "End Time",
       "allDay": "All Day Event",

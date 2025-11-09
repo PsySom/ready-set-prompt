@@ -67,6 +67,7 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
     category: 'leisure' as const,
     impact_type: 'neutral' as const,
     date: defaultDate || new Date(),
+    anytime: true,
     start_time: '09:00',
     duration_minutes: 60,
     reminder_enabled: false,
@@ -81,6 +82,7 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
         category: activity.category || 'leisure',
         impact_type: activity.impact_type || 'neutral',
         date: new Date(activity.date),
+        anytime: !activity.start_time,
         start_time: activity.start_time || '09:00',
         duration_minutes: activity.duration_minutes || 60,
         reminder_enabled: activity.reminder_enabled || false,
@@ -122,7 +124,7 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
       category: formData.category,
       impact_type: formData.impact_type,
       date: format(formData.date, 'yyyy-MM-dd'),
-      start_time: formData.start_time,
+      start_time: formData.anytime ? null : formData.start_time,
       end_time: null,
       duration_minutes: formData.duration_minutes,
       reminder_enabled: formData.reminder_enabled,
@@ -224,16 +226,27 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="start-time" className="text-sm md:text-base">{t('calendar.form.startTime')}</Label>
-            <Input
-              id="start-time"
-              type="time"
-              value={formData.start_time}
-              onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-              className="h-10 md:h-11 text-sm md:text-base"
+          <div className="flex items-center justify-between p-3 md:p-4 rounded-lg bg-muted/50">
+            <Label htmlFor="anytime" className="text-sm md:text-base cursor-pointer">{t('calendar.form.anytime')}</Label>
+            <Switch
+              id="anytime"
+              checked={formData.anytime}
+              onCheckedChange={(checked) => setFormData({ ...formData, anytime: checked })}
             />
           </div>
+
+          {!formData.anytime && (
+            <div className="animate-fade-in">
+              <Label htmlFor="start-time" className="text-sm md:text-base">{t('calendar.form.startTime')}</Label>
+              <Input
+                id="start-time"
+                type="time"
+                value={formData.start_time}
+                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                className="h-10 md:h-11 text-sm md:text-base"
+              />
+            </div>
+          )}
 
           <div>
             <Label htmlFor="duration" className="text-sm md:text-base">{t('calendar.form.duration')}</Label>
