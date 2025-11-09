@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 
 interface Question {
   id: number;
@@ -39,6 +40,7 @@ const TakeTest = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { getLocalizedField } = useLocale();
   const [test, setTest] = useState<Test | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<{ [key: number]: number }>({});
@@ -189,7 +191,7 @@ const TakeTest = () => {
                 {t('tests.question')} {currentQuestion + 1}
               </span>
               <h2 className="text-2xl font-semibold text-foreground mt-2">
-                {question.text}
+                {getLocalizedField(question, 'text')}
               </h2>
             </div>
 
@@ -209,7 +211,7 @@ const TakeTest = () => {
                       htmlFor={`option-${index}`}
                       className="flex-1 cursor-pointer text-base"
                     >
-                      {option.label}
+                      {getLocalizedField(option, 'label')}
                     </Label>
                   </div>
                 ))}

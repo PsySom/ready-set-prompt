@@ -8,6 +8,7 @@ import { Clock, FileText, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 
 interface Test {
   id: string;
@@ -29,8 +30,8 @@ const Tests = () => {
   const [lastResults, setLastResults] = useState<{ [key: string]: LastResult }>({});
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-
   const { t } = useTranslation();
+  const { getLocalizedField } = useLocale();
 
   useEffect(() => {
     loadTests();
@@ -126,10 +127,10 @@ const Tests = () => {
                   <div className="space-y-4 md:space-y-5">
                     <div>
                        <h3 className="text-2xl font-semibold text-foreground medium-transition group-hover:text-primary">
-                        {test.name_en}
+                        {getLocalizedField(test, 'name')}
                       </h3>
                       <p className="text-base text-muted-foreground mt-sm">
-                        {test.description_en}
+                        {getLocalizedField(test, 'description')}
                       </p>
                     </div>
 

@@ -9,6 +9,7 @@ import { ArrowLeft, RefreshCw, Share2, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 
 interface TestResult {
   id: string;
@@ -37,6 +38,7 @@ const TestResult = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { getLocalizedField } = useLocale();
   const [result, setResult] = useState<TestResult | null>(null);
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,7 +160,7 @@ const TestResult = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-foreground">{test.name_en}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{getLocalizedField(test, 'name')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
               {t('tests.completedOn')} {new Date(result.completed_at).toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -186,7 +188,7 @@ const TestResult = () => {
               className={`text-lg px-6 py-2 ${getCategoryColor(result.category)}`}
               variant="outline"
             >
-              {categoryDetails.label}
+              {getLocalizedField(categoryDetails, 'label')}
             </Badge>
           )}
         </Card>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Clock, FileText, History } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 
 interface Test {
   id: string;
@@ -30,6 +31,7 @@ const TestDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { getLocalizedField } = useLocale();
   const [test, setTest] = useState<Test | null>(null);
   const [hasHistory, setHasHistory] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,12 +112,12 @@ const TestDetail = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold text-foreground">{test.name_en}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{getLocalizedField(test, 'name')}</h1>
         </div>
 
         {/* Test Info */}
         <Card className="p-6 space-y-4">
-          <p className="text-muted-foreground">{test.description_en}</p>
+          <p className="text-muted-foreground">{getLocalizedField(test, 'description')}</p>
 
           <div className="flex flex-wrap gap-3">
             <Badge variant="outline" className="gap-2">
@@ -146,7 +148,7 @@ const TestDetail = () => {
                 key={index}
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
               >
-                <span className="font-medium">{range.label}</span>
+                <span className="font-medium">{getLocalizedField(range, 'label')}</span>
                 <Badge variant="outline">
                   {range.min}-{range.max} {t('testDetail.points')}
                 </Badge>
