@@ -2424,6 +2424,1136 @@ LEFT JOIN user_recommendations ur ON ur.reason LIKE '%' || r.id || '%'
 GROUP BY r.id;
 ```
 
+## 📊 Детальное описание системы аналитики и Insights
+
+### Обзор функциональности
+
+Система аналитики Insights - это комплексный модуль визуализации и анализа данных, который предоставляет пользователям глубокое понимание их эмоционального благополучия, паттернов поведения и эффективности активностей. Система обрабатывает данные трекеров, активностей и журнала для выявления корреляций, трендов и персонализированных инсайтов.
+
+### 🏗️ Архитектура системы
+
+#### Основные компоненты
+
+**Страница:** `src/pages/Insights.tsx`
+
+Центральная страница, которая:
+1. Загружает данные за выбранный период (неделя/месяц/3 месяца/год)
+2. Объединяет данные из трёх источников: tracker_entries, activities, journal_sessions
+3. Распределяет данные между специализированными компонентами визуализации
+4. Управляет состоянием и периодом отображения
+
+```typescript
+interface InsightsData {
+  trackerEntries: TrackerEntry[];  // Записи трекеров с эмоциями
+  activities: Activity[];          // Активности пользователя
+  journalSessions: JournalSession[]; // Сессии журналирования
+}
+
+type Period = 'week' | 'month' | '3months' | 'year';
+```
+
+#### Процесс загрузки данных
+
+```typescript
+const fetchData = async () => {
+  const now = new Date();
+  const startDate = new Date();
+  
+  // Расчёт начальной даты в зависимости от периода
+  switch (period) {
+    case 'week':
+      startDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(now.getMonth() - 1);
+      break;
+    case '3months':
+      startDate.setMonth(now.getMonth() - 3);
+      break;
+    case 'year':
+      startDate.setFullYear(now.getFullYear() - 1);
+      break;
+  }
+
+  // 1. Получение записей трекеров с эмоциями (JOIN)
+  const { data: trackerEntries } = await supabase
+    .from('tracker_entries')
+    .select(`
+      *,
+      tracker_emotions (*)
+    `)
+    .eq('user_id', user.id)
+    .gte('entry_date', startDate.toISOString().split('T')[0])
+    .order('entry_date', { ascending: true });
+
+  // 2. Получение активностей
+  const { data: activities } = await supabase
+    .from('activities')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('date', startDate.toISOString().split('T')[0])
+    .order('date', { ascending: true });
+
+  // 3. Получение журнальных сессий
+  const { data: journalSessions } = await supabase
+    .from('journal_sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('started_at', startDate.toISOString())
+    .order('started_at', { ascending: true });
+
+  setData({ trackerEntries, activities, journalSessions });
+};
+```
+
+### 📈 Компоненты визуализации и алгоритмы
+
+#### 1. OverviewCards - Обзорные карточки
+
+**Компонент:** `src/components/insights/OverviewCards.tsx`
+
+**Функция:** Отображает ключевые метрики периода в виде числовых карточек.
+
+**Алгоритмы расчёта:**
+
+```typescript
+// 1. Средний мод (Average Mood)
+const avgMood = trackerEntries
+  .filter(e => e.mood_score !== null)
+  .reduce((sum, e) => sum + e.mood_score, 0) / totalMoodEntries;
+
+// Нормализация от -5..5 к 0..100%
+const moodPercentage = ((avgMood + 5) / 10) * 100;
+
+// 2. Баланс эмоций (Emotion Balance)
+const emotions = trackerEntries.flatMap(e => e.tracker_emotions || []);
+const positiveCount = emotions.filter(e => e.category === 'positive').length;
+const totalEmotions = emotions.length;
+const positiveRatio = (positiveCount / totalEmotions) * 100;
+
+// 3. Средний стресс (Average Stress)
+const avgStress = trackerEntries
+  .filter(e => e.stress_level !== null)
+  .reduce((sum, e) => sum + e.stress_level, 0) / totalStressEntries;
+
+// Инверсия для отображения (низкий стресс = хорошо)
+const stressPercentage = ((10 - avgStress) / 10) * 100;
+
+// 4. Процент завершения активностей (Activity Completion)
+const completedActivities = activities.filter(a => a.status === 'completed').length;
+const totalActivities = activities.length;
+const completionRate = (completedActivities / totalActivities) * 100;
+```
+
+**Визуальное представление:**
+- Прогресс-бары с цветовой кодировкой (зелёный > 70%, жёлтый 40-70%, красный < 40%)
+- Числовые значения с emoji-индикаторами
+- Адаптивная сетка (2 колонки на мобильном, 4 на desktop)
+
+#### 2. MoodTrendsChart - График трендов настроения
+
+**Компонент:** `src/components/insights/MoodTrendsChart.tsx`
+
+**Функция:** Временной график изменения настроения с визуализацией позитивной и негативной зон.
+
+**Алгоритм подготовки данных:**
+
+```typescript
+// 1. Фильтрация и форматирование
+const data = entries
+  .filter(e => e.mood_score !== null)
+  .map(entry => {
+    const date = new Date(`${entry.entry_date}T${entry.entry_time}`);
+    
+    // Адаптивное форматирование лейблов в зависимости от периода
+    let label = '';
+    switch (period) {
+      case 'week':
+        label = format(date, 'EEE');      // Mon, Tue, Wed
+        break;
+      case 'month':
+        label = format(date, 'MMM d');    // Jan 15
+        break;
+      case '3months':
+      case 'year':
+        label = format(date, 'MMM d');    // Jan 15
+        break;
+    }
+
+    return {
+      time: label,
+      mood: entry.mood_score,
+      date: entry.entry_date,
+    };
+  });
+
+// 2. Расчёт средней линии
+const avgMood = data.reduce((sum, d) => sum + d.mood, 0) / data.length;
+```
+
+**Визуализация:**
+- Area chart с gradient fill (позитивная зона - зелёный, негативная - красный)
+- Reference line на нуле (нейтральная линия)
+- Dashed reference line для среднего значения
+- Custom tooltip с emoji-индикаторами
+- Y-axis: -5 до +5 с метками [-5, -3, 0, 3, 5]
+
+**Градиенты:**
+```typescript
+<linearGradient id="moodGradientPositive" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4} />
+  <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+</linearGradient>
+
+<linearGradient id="moodGradientNegative" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+  <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0.4} />
+</linearGradient>
+```
+
+#### 3. MoodDistribution - Распределение настроения
+
+**Компонент:** `src/components/insights/MoodDistribution.tsx`
+
+**Функция:** Гистограмма распределения значений настроения.
+
+**Алгоритм:**
+
+```typescript
+// 1. Группировка по значениям
+const distribution: { [key: number]: number } = {};
+entries.forEach(e => {
+  if (e.mood_score !== null) {
+    distribution[e.mood_score] = (distribution[e.mood_score] || 0) + 1;
+  }
+});
+
+// 2. Подготовка данных для bar chart
+const data = Object.entries(distribution)
+  .map(([score, count]) => ({
+    score: parseInt(score),
+    count: count,
+    percentage: (count / totalEntries) * 100,
+    emoji: getEmoji(parseInt(score)),  // -5: 😢, 0: 😐, 5: 😄
+  }))
+  .sort((a, b) => a.score - b.score);
+
+// 3. Цветовая кодировка баров
+const getBarColor = (score: number) => {
+  if (score >= 3) return 'hsl(var(--accent))';      // Позитивный
+  if (score >= 1) return 'hsl(var(--primary))';     // Слегка позитивный
+  if (score >= -1) return 'hsl(var(--muted))';      // Нейтральный
+  if (score >= -3) return 'hsl(var(--warning))';    // Слегка негативный
+  return 'hsl(var(--destructive))';                  // Негативный
+};
+```
+
+#### 4. TopEmotions - Топ эмоций
+
+**Компонент:** `src/components/insights/TopEmotions.tsx`
+
+**Функция:** Ранжированный список наиболее частых эмоций с интенсивностью.
+
+**Алгоритм:**
+
+```typescript
+// 1. Агрегация эмоций
+const emotionCounts: { 
+  [label: string]: { 
+    count: number; 
+    totalIntensity: number;
+    category: string;
+  } 
+} = {};
+
+entries.forEach(entry => {
+  entry.tracker_emotions?.forEach(emotion => {
+    if (!emotionCounts[emotion.emotion_label]) {
+      emotionCounts[emotion.emotion_label] = {
+        count: 0,
+        totalIntensity: 0,
+        category: emotion.category,
+      };
+    }
+    emotionCounts[emotion.emotion_label].count++;
+    emotionCounts[emotion.emotion_label].totalIntensity += emotion.intensity;
+  });
+});
+
+// 2. Расчёт средней интенсивности и сортировка
+const topEmotions = Object.entries(emotionCounts)
+  .map(([label, data]) => ({
+    label,
+    count: data.count,
+    avgIntensity: data.totalIntensity / data.count,
+    category: data.category,
+    emoji: getEmotionEmoji(label),
+  }))
+  .sort((a, b) => b.count - a.count)  // Сортировка по частоте
+  .slice(0, 5);  // Топ-5
+
+// 3. Визуализация с прогресс-барами
+topEmotions.map(emotion => ({
+  ...emotion,
+  percentage: (emotion.count / totalEmotions) * 100,
+  intensityBar: (emotion.avgIntensity / 10) * 100,  // 0-10 to 0-100%
+}));
+```
+
+#### 5. EmotionBalance - Баланс эмоций
+
+**Компонент:** `src/components/insights/EmotionBalance.tsx`
+
+**Функция:** Pie chart соотношения позитивных, нейтральных и негативных эмоций с трендом.
+
+**Алгоритм:**
+
+```typescript
+// 1. Подсчёт по категориям
+let negative = 0;
+let neutral = 0;
+let positive = 0;
+
+entries.forEach(entry => {
+  entry.tracker_emotions?.forEach(emotion => {
+    const category = emotion.category?.toLowerCase();
+    if (category === 'negative') negative++;
+    else if (category === 'neutral') neutral++;
+    else if (category === 'positive') positive++;
+  });
+});
+
+const total = negative + neutral + positive;
+
+// 2. Расчёт соотношений
+const data = [
+  { name: 'Negative', value: negative, percentage: (negative / total) * 100 },
+  { name: 'Neutral', value: neutral, percentage: (neutral / total) * 100 },
+  { name: 'Positive', value: positive, percentage: (positive / total) * 100 },
+];
+
+// 3. Определение тренда
+const positiveRatio = (positive / total) * 100;
+
+const getTrend = () => {
+  if (positiveRatio >= 60) return { 
+    icon: TrendingUp, 
+    text: 'Improving', 
+    color: 'text-accent' 
+  };
+  if (positiveRatio <= 40) return { 
+    icon: TrendingDown, 
+    text: 'Needs attention', 
+    color: 'text-destructive' 
+  };
+  return { 
+    icon: Minus, 
+    text: 'Stable', 
+    color: 'text-muted-foreground' 
+  };
+};
+```
+
+**Визуализация:**
+- Donut chart (innerRadius=60, outerRadius=80)
+- Цветовая схема: красный (negative), серый (neutral), зелёный (positive)
+- Центральный индикатор тренда с иконкой
+
+#### 6. StressAnxietyChart - График стресса и тревожности
+
+**Компонент:** `src/components/insights/StressAnxietyChart.tsx`
+
+**Функция:** Двойной линейный график для сравнения динамики стресса и тревожности.
+
+**Алгоритм:**
+
+```typescript
+// 1. Подготовка данных
+const data = entries
+  .filter(e => e.stress_level !== null || e.anxiety_level !== null)
+  .map(entry => {
+    const date = new Date(`${entry.entry_date}T${entry.entry_time}`);
+    return {
+      time: formatDate(date, period),
+      stress: entry.stress_level,
+      anxiety: entry.anxiety_level,
+    };
+  });
+
+// 2. Расчёт средних значений
+const avgStress = data
+  .filter(d => d.stress !== null)
+  .reduce((sum, d) => sum + d.stress, 0) / stressCount;
+
+const avgAnxiety = data
+  .filter(d => d.anxiety !== null)
+  .reduce((sum, d) => sum + d.anxiety, 0) / anxietyCount;
+
+// 3. Определение корреляции
+const correlation = calculateCorrelation(
+  data.map(d => d.stress),
+  data.map(d => d.anxiety)
+);
+```
+
+**Корреляция Пирсона:**
+```typescript
+function calculateCorrelation(x: number[], y: number[]): number {
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+  const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+
+  const numerator = n * sumXY - sumX * sumY;
+  const denominator = Math.sqrt(
+    (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY)
+  );
+
+  return denominator === 0 ? 0 : numerator / denominator;
+}
+```
+
+**Интерпретация корреляции:**
+- r > 0.7: Сильная положительная корреляция (стресс и тревожность движутся вместе)
+- 0.3 < r < 0.7: Умеренная корреляция
+- r < 0.3: Слабая корреляция
+
+#### 7. EnergyPatterns - Паттерны энергии
+
+**Компонент:** `src/components/insights/EnergyPatterns.tsx`
+
+**Функция:** Анализ уровня энергии по времени суток.
+
+**Алгоритм:**
+
+```typescript
+// 1. Подготовка данных с временем суток
+const data = entries
+  .filter(e => e.energy_level !== null)
+  .map(entry => {
+    const date = new Date(`${entry.entry_date}T${entry.entry_time}`);
+    return {
+      time: formatDate(date, period),
+      energy: entry.energy_level,
+      hour: date.getHours(),
+    };
+  });
+
+// 2. Группировка по временным слотам
+const timePatterns = data.reduce((acc, item) => {
+  const timeSlot = 
+    item.hour < 6 ? 'Night' :
+    item.hour < 12 ? 'Morning' :
+    item.hour < 18 ? 'Afternoon' : 'Evening';
+  
+  if (!acc[timeSlot]) {
+    acc[timeSlot] = { sum: 0, count: 0, values: [] };
+  }
+  acc[timeSlot].sum += item.energy;
+  acc[timeSlot].count += 1;
+  acc[timeSlot].values.push(item.energy);
+  
+  return acc;
+}, {});
+
+// 3. Статистический анализ по слотам
+const analysis = Object.entries(timePatterns).map(([slot, data]) => {
+  const avg = data.sum / data.count;
+  const variance = calculateVariance(data.values, avg);
+  const stdDev = Math.sqrt(variance);
+  
+  return {
+    timeSlot: slot,
+    average: avg,
+    stdDeviation: stdDev,
+    consistency: stdDev < 1.5 ? 'high' : stdDev < 2.5 ? 'medium' : 'low',
+  };
+});
+
+// 4. Определение лучшего времени
+const bestTime = analysis
+  .sort((a, b) => b.average - a.average)[0];
+```
+
+**Вычисление дисперсии:**
+```typescript
+function calculateVariance(values: number[], mean: number): number {
+  const squaredDiffs = values.map(v => Math.pow(v - mean, 2));
+  return squaredDiffs.reduce((a, b) => a + b, 0) / values.length;
+}
+```
+
+#### 8. SatisfactionCharts - Графики удовлетворённости
+
+**Компонент:** `src/components/insights/SatisfactionCharts.tsx`
+
+**Функция:** Сравнение удовлетворённости процессом и результатом.
+
+**Алгоритм:**
+
+```typescript
+// 1. Агрегация данных
+const satisfactionData = {
+  process: entries
+    .filter(e => e.process_satisfaction !== null)
+    .map(e => e.process_satisfaction),
+  result: entries
+    .filter(e => e.result_satisfaction !== null)
+    .map(e => e.result_satisfaction),
+};
+
+// 2. Статистика
+const stats = {
+  process: {
+    avg: calculateAverage(satisfactionData.process),
+    median: calculateMedian(satisfactionData.process),
+    mode: calculateMode(satisfactionData.process),
+    trend: calculateTrend(satisfactionData.process),
+  },
+  result: {
+    avg: calculateAverage(satisfactionData.result),
+    median: calculateMedian(satisfactionData.result),
+    mode: calculateMode(satisfactionData.result),
+    trend: calculateTrend(satisfactionData.result),
+  },
+};
+
+// 3. Сравнительный анализ
+const gap = stats.result.avg - stats.process.avg;
+const interpretation = {
+  gap: gap,
+  meaning: gap > 1 
+    ? 'Результаты лучше ожиданий' 
+    : gap < -1 
+    ? 'Процесс приятнее результатов'
+    : 'Баланс между процессом и результатом',
+};
+```
+
+**Расчёт тренда (Simple Moving Average):**
+```typescript
+function calculateTrend(values: number[], windowSize: number = 3): string {
+  if (values.length < windowSize) return 'insufficient data';
+  
+  const recentAvg = calculateAverage(values.slice(-windowSize));
+  const previousAvg = calculateAverage(
+    values.slice(-windowSize * 2, -windowSize)
+  );
+  
+  const change = ((recentAvg - previousAvg) / previousAvg) * 100;
+  
+  if (change > 5) return 'improving';
+  if (change < -5) return 'declining';
+  return 'stable';
+}
+```
+
+#### 9. ActivityCompletion - Завершение активностей
+
+**Компонент:** `src/components/insights/ActivityCompletion.tsx`
+
+**Функция:** Анализ процента выполнения и тренда активностей.
+
+**Алгоритм:**
+
+```typescript
+// 1. Группировка по дням
+const dailyCompletion = activities.reduce((acc, activity) => {
+  const date = activity.date;
+  if (!acc[date]) {
+    acc[date] = { total: 0, completed: 0 };
+  }
+  acc[date].total++;
+  if (activity.status === 'completed') {
+    acc[date].completed++;
+  }
+  return acc;
+}, {});
+
+// 2. Расчёт дневных процентов
+const dailyRates = Object.entries(dailyCompletion)
+  .map(([date, data]) => ({
+    date,
+    rate: (data.completed / data.total) * 100,
+    completed: data.completed,
+    total: data.total,
+  }))
+  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+// 3. Анализ тренда (линейная регрессия)
+const trend = calculateLinearRegression(
+  dailyRates.map((d, i) => i),  // x: индексы дней
+  dailyRates.map(d => d.rate)   // y: процент завершения
+);
+
+// trend.slope > 0 = улучшение, < 0 = ухудшение
+```
+
+**Линейная регрессия:**
+```typescript
+function calculateLinearRegression(
+  x: number[], 
+  y: number[]
+): { slope: number; intercept: number; r2: number } {
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+  const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+  const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+
+  // R² (коэффициент детерминации)
+  const yMean = sumY / n;
+  const ssTotal = y.reduce((sum, yi) => sum + Math.pow(yi - yMean, 2), 0);
+  const ssRes = y.reduce((sum, yi, i) => {
+    const predicted = slope * x[i] + intercept;
+    return sum + Math.pow(yi - predicted, 2);
+  }, 0);
+  const r2 = 1 - (ssRes / ssTotal);
+
+  return { slope, intercept, r2 };
+}
+```
+
+#### 10. ActivityBreakdown - Разбивка активностей
+
+**Компонент:** `src/components/insights/ActivityBreakdown.tsx`
+
+**Функция:** Pie charts по категориям и типам влияния.
+
+**Алгоритм:**
+
+```typescript
+// 1. Подсчёт по категориям
+const categoryCounts = activities.reduce((acc, activity) => {
+  const category = activity.category || 'other';
+  acc[category] = (acc[category] || 0) + 1;
+  return acc;
+}, {});
+
+const categoryData = Object.entries(categoryCounts)
+  .map(([category, count]) => ({
+    name: capitalize(category),
+    value: count,
+    percentage: (count / activities.length) * 100,
+    color: CATEGORY_COLORS[category],
+  }))
+  .sort((a, b) => b.value - a.value);
+
+// 2. Подсчёт по типам влияния с временем
+const impactAnalysis = activities.reduce((acc, activity) => {
+  const impact = activity.impact_type || 'neutral';
+  if (!acc[impact]) {
+    acc[impact] = { count: 0, totalMinutes: 0 };
+  }
+  acc[impact].count++;
+  acc[impact].totalMinutes += activity.duration_minutes || 0;
+  return acc;
+}, {});
+
+const impactData = Object.entries(impactAnalysis)
+  .map(([impact, data]) => ({
+    name: capitalize(impact),
+    count: data.count,
+    minutes: data.totalMinutes,
+    hours: Math.floor(data.totalMinutes / 60),
+    avgDuration: data.totalMinutes / data.count,
+    percentage: (data.count / activities.length) * 100,
+    color: IMPACT_COLORS[impact],
+  }));
+```
+
+#### 11. PatternCards - Карточки паттернов
+
+**Компонент:** `src/components/insights/PatternCards.tsx`
+
+**Функция:** Автоматическое обнаружение и визуализация поведенческих паттернов.
+
+**Алгоритмы обнаружения паттернов:**
+
+**A. Лучший день недели для настроения**
+
+```typescript
+// 1. Группировка по дням недели
+const dayMoods: { [day: string]: { sum: number; count: number } } = {};
+
+trackerEntries.forEach(entry => {
+  if (entry.mood_score !== null) {
+    const day = format(new Date(entry.entry_date), 'EEEE'); // Monday, Tuesday...
+    if (!dayMoods[day]) {
+      dayMoods[day] = { sum: 0, count: 0 };
+    }
+    dayMoods[day].sum += entry.mood_score;
+    dayMoods[day].count += 1;
+  }
+});
+
+// 2. Расчёт средних и определение лучшего
+const bestDay = Object.entries(dayMoods)
+  .map(([day, data]) => ({
+    day,
+    average: data.sum / data.count,
+    count: data.count,
+  }))
+  .sort((a, b) => b.average - a.average)[0];
+
+// 3. Статистическая значимость (t-test)
+const isSignificant = performTTest(
+  dayMoods[bestDay.day].values,
+  allOtherDaysValues
+);
+```
+
+**B. Влияние активностей на настроение**
+
+```typescript
+// 1. Идентификация дней с активностями
+const activityDays = new Set(
+  activities
+    .filter(a => a.status === 'completed')
+    .map(a => a.date)
+);
+
+// 2. Разделение записей трекеров
+const moodsOnActivityDays = trackerEntries.filter(e => 
+  activityDays.has(e.entry_date) && e.mood_score !== null
+);
+
+const moodsOnRestDays = trackerEntries.filter(e => 
+  !activityDays.has(e.entry_date) && e.mood_score !== null
+);
+
+// 3. Сравнение средних
+const avgActivityDayMood = calculateAverage(
+  moodsOnActivityDays.map(e => e.mood_score)
+);
+
+const avgRestDayMood = calculateAverage(
+  moodsOnRestDays.map(e => e.mood_score)
+);
+
+const difference = avgActivityDayMood - avgRestDayMood;
+
+// 4. Определение значимости (Cohen's d)
+const cohensD = calculateCohenD(
+  moodsOnActivityDays.map(e => e.mood_score),
+  moodsOnRestDays.map(e => e.mood_score)
+);
+
+// Эффект считается значимым если |d| > 0.5
+const hasSignificantEffect = Math.abs(cohensD) > 0.5;
+```
+
+**Cohen's d (размер эффекта):**
+```typescript
+function calculateCohenD(group1: number[], group2: number[]): number {
+  const mean1 = calculateAverage(group1);
+  const mean2 = calculateAverage(group2);
+  
+  const var1 = calculateVariance(group1, mean1);
+  const var2 = calculateVariance(group2, mean2);
+  
+  const pooledSD = Math.sqrt((var1 + var2) / 2);
+  
+  return (mean1 - mean2) / pooledSD;
+}
+```
+
+**C. Самое продуктивное время суток**
+
+```typescript
+// 1. Группировка активностей по времени суток
+const timeSlots: { [slot: string]: number } = {};
+
+activities.forEach(activity => {
+  if (activity.start_time && activity.status === 'completed') {
+    const hour = parseInt(activity.start_time.split(':')[0]);
+    const slot = 
+      hour < 6 ? 'Night' :
+      hour < 12 ? 'Morning' :
+      hour < 18 ? 'Afternoon' : 'Evening';
+    
+    timeSlots[slot] = (timeSlots[slot] || 0) + 1;
+  }
+});
+
+// 2. Определение пика активности
+const mostActiveSlot = Object.entries(timeSlots)
+  .sort((a, b) => b[1] - a[1])[0];
+
+// 3. Расчёт распределения
+const totalActivities = Object.values(timeSlots).reduce((a, b) => a + b, 0);
+const distribution = Object.entries(timeSlots).map(([slot, count]) => ({
+  slot,
+  count,
+  percentage: (count / totalActivities) * 100,
+}));
+```
+
+**D. Консистентность отслеживания**
+
+```typescript
+// 1. Подсчёт уникальных дней с записями
+const uniqueDays = new Set(
+  trackerEntries.map(e => e.entry_date)
+).size;
+
+// 2. Расчёт общего периода
+const firstEntry = new Date(trackerEntries[0].entry_date);
+const lastEntry = new Date(trackerEntries[trackerEntries.length - 1].entry_date);
+const totalDays = Math.floor(
+  (lastEntry.getTime() - firstEntry.getTime()) / (1000 * 60 * 60 * 24)
+) + 1;
+
+// 3. Процент консистентности
+const consistency = (uniqueDays / totalDays) * 100;
+
+// 4. Определение стриков (серий дней подряд)
+const streaks = calculateStreaks(trackerEntries);
+const longestStreak = Math.max(...streaks);
+const currentStreak = streaks[streaks.length - 1];
+
+// 5. Категоризация консистентности
+const consistencyLevel = 
+  consistency >= 90 ? 'Excellent' :
+  consistency >= 70 ? 'Great' :
+  consistency >= 50 ? 'Good' :
+  consistency >= 30 ? 'Fair' : 'Needs improvement';
+```
+
+**Расчёт стриков:**
+```typescript
+function calculateStreaks(entries: TrackerEntry[]): number[] {
+  const sortedDates = [...new Set(entries.map(e => e.entry_date))]
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  
+  const streaks: number[] = [];
+  let currentStreak = 1;
+  
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prevDate = new Date(sortedDates[i - 1]);
+    const currDate = new Date(sortedDates[i]);
+    const daysDiff = Math.floor(
+      (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    
+    if (daysDiff === 1) {
+      currentStreak++;
+    } else {
+      streaks.push(currentStreak);
+      currentStreak = 1;
+    }
+  }
+  streaks.push(currentStreak);
+  
+  return streaks;
+}
+```
+
+### 🔗 Корреляционный анализ
+
+#### Многомерный корреляционный анализ
+
+**Функция:** Выявление взаимосвязей между различными метриками.
+
+```typescript
+// Матрица корреляции для всех метрик
+interface CorrelationMatrix {
+  mood_stress: number;
+  mood_anxiety: number;
+  mood_energy: number;
+  stress_anxiety: number;
+  stress_energy: number;
+  anxiety_energy: number;
+  mood_activities: number;
+  energy_activities: number;
+}
+
+function calculateCorrelationMatrix(
+  entries: TrackerEntry[],
+  activities: Activity[]
+): CorrelationMatrix {
+  // 1. Подготовка векторов данных по дням
+  const dailyData = aggregateByDay(entries, activities);
+  
+  // 2. Расчёт корреляций Пирсона для каждой пары
+  return {
+    mood_stress: pearsonCorrelation(
+      dailyData.map(d => d.mood),
+      dailyData.map(d => d.stress)
+    ),
+    mood_anxiety: pearsonCorrelation(
+      dailyData.map(d => d.mood),
+      dailyData.map(d => d.anxiety)
+    ),
+    mood_energy: pearsonCorrelation(
+      dailyData.map(d => d.mood),
+      dailyData.map(d => d.energy)
+    ),
+    stress_anxiety: pearsonCorrelation(
+      dailyData.map(d => d.stress),
+      dailyData.map(d => d.anxiety)
+    ),
+    stress_energy: pearsonCorrelation(
+      dailyData.map(d => d.stress),
+      dailyData.map(d => d.energy)
+    ),
+    anxiety_energy: pearsonCorrelation(
+      dailyData.map(d => d.anxiety),
+      dailyData.map(d => d.energy)
+    ),
+    mood_activities: pearsonCorrelation(
+      dailyData.map(d => d.mood),
+      dailyData.map(d => d.activityCount)
+    ),
+    energy_activities: pearsonCorrelation(
+      dailyData.map(d => d.energy),
+      dailyData.map(d => d.activityCount)
+    ),
+  };
+}
+
+// Агрегация данных по дням
+function aggregateByDay(
+  entries: TrackerEntry[],
+  activities: Activity[]
+): DailyAggregateData[] {
+  const dailyMap = new Map<string, DailyAggregateData>();
+  
+  // Трекеры
+  entries.forEach(entry => {
+    const date = entry.entry_date;
+    if (!dailyMap.has(date)) {
+      dailyMap.set(date, {
+        date,
+        mood: [],
+        stress: [],
+        anxiety: [],
+        energy: [],
+        activityCount: 0,
+      });
+    }
+    
+    const day = dailyMap.get(date)!;
+    if (entry.mood_score !== null) day.mood.push(entry.mood_score);
+    if (entry.stress_level !== null) day.stress.push(entry.stress_level);
+    if (entry.anxiety_level !== null) day.anxiety.push(entry.anxiety_level);
+    if (entry.energy_level !== null) day.energy.push(entry.energy_level);
+  });
+  
+  // Активности
+  activities.forEach(activity => {
+    if (activity.status === 'completed') {
+      const day = dailyMap.get(activity.date);
+      if (day) day.activityCount++;
+    }
+  });
+  
+  // Усреднение значений за день
+  return Array.from(dailyMap.values()).map(day => ({
+    date: day.date,
+    mood: calculateAverage(day.mood),
+    stress: calculateAverage(day.stress),
+    anxiety: calculateAverage(day.anxiety),
+    energy: calculateAverage(day.energy),
+    activityCount: day.activityCount,
+  }));
+}
+```
+
+#### Интерпретация корреляций
+
+**Реализация в RecommendationsCard:**
+
+```typescript
+function interpretCorrelations(matrix: CorrelationMatrix): Insight[] {
+  const insights: Insight[] = [];
+  
+  // Стресс-Тревожность
+  if (matrix.stress_anxiety > 0.7) {
+    insights.push({
+      type: 'strong_correlation',
+      title: 'High Stress-Anxiety Correlation',
+      description: 'Your stress and anxiety levels are strongly connected. Managing one may help with the other.',
+      recommendation: 'Try stress-reduction techniques like deep breathing or meditation.',
+      priority: 'high',
+    });
+  }
+  
+  // Настроение-Энергия
+  if (matrix.mood_energy > 0.6) {
+    insights.push({
+      type: 'positive_correlation',
+      title: 'Energy Boosts Mood',
+      description: 'Higher energy levels correlate with better mood.',
+      recommendation: 'Focus on activities that increase energy (exercise, sleep, nutrition).',
+      priority: 'medium',
+    });
+  }
+  
+  // Настроение-Активности
+  if (matrix.mood_activities > 0.5) {
+    insights.push({
+      type: 'activity_benefit',
+      title: 'Activities Improve Mood',
+      description: 'Days with more activities show better mood scores.',
+      recommendation: 'Maintain consistent daily activities, even small ones.',
+      priority: 'high',
+    });
+  }
+  
+  // Негативная корреляция: Стресс-Энергия
+  if (matrix.stress_energy < -0.5) {
+    insights.push({
+      type: 'negative_correlation',
+      title: 'Stress Drains Energy',
+      description: 'High stress levels are associated with low energy.',
+      recommendation: 'Prioritize stress management to preserve energy levels.',
+      priority: 'high',
+    });
+  }
+  
+  return insights.sort((a, b) => {
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    return priorityOrder[a.priority] - priorityOrder[b.priority];
+  });
+}
+```
+
+### 📤 Экспорт данных
+
+```typescript
+const handleExport = () => {
+  const exportData = {
+    metadata: {
+      period,
+      startDate: getStartDate(period),
+      endDate: new Date().toISOString(),
+      exported_at: new Date().toISOString(),
+      user_id: user.id,
+    },
+    summary: {
+      totalEntries: data.trackerEntries.length,
+      totalActivities: data.activities.length,
+      totalJournalSessions: data.journalSessions.length,
+      avgMood: calculateAverage(data.trackerEntries.map(e => e.mood_score)),
+      avgStress: calculateAverage(data.trackerEntries.map(e => e.stress_level)),
+      completionRate: calculateCompletionRate(data.activities),
+    },
+    rawData: {
+      trackerEntries: data.trackerEntries,
+      activities: data.activities,
+      journalSessions: data.journalSessions,
+    },
+    analysis: {
+      correlationMatrix: calculateCorrelationMatrix(
+        data.trackerEntries,
+        data.activities
+      ),
+      patterns: detectPatterns(data),
+      insights: generateInsights(data),
+    },
+  };
+
+  // Создание JSON blob и скачивание
+  const blob = new Blob(
+    [JSON.stringify(exportData, null, 2)],
+    { type: 'application/json' }
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `wellness-insights-${period}-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+### 🎨 Цветовая схема
+
+```typescript
+// Цвета для категорий активностей
+const CATEGORY_COLORS = {
+  physical: 'hsl(var(--secondary))',    // Синий
+  mental: 'hsl(var(--primary))',        // Фиолетовый
+  social: 'hsl(var(--accent))',         // Зелёный
+  hobby: 'hsl(31 88% 68%)',             // Оранжевый
+  work: 'hsl(var(--muted-foreground))', // Серый
+  rest: 'hsl(204 55% 63%)',             // Голубой
+  other: 'hsl(var(--border))',          // Светло-серый
+};
+
+// Цвета для типов влияния
+const IMPACT_COLORS = {
+  positive: 'hsl(var(--accent))',       // Зелёный
+  negative: 'hsl(var(--destructive))',  // Красный
+  neutral: 'hsl(var(--muted-foreground))', // Серый
+  mixed: 'hsl(31 88% 68%)',             // Оранжевый
+};
+
+// Градиенты настроения
+const MOOD_GRADIENTS = {
+  positive: 'from-accent/40 to-accent/0',
+  negative: 'from-destructive/40 to-destructive/0',
+  neutral: 'from-muted/40 to-muted/0',
+};
+```
+
+### 🚀 Производительность
+
+1. **Мемоизация вычислений**
+```typescript
+const moodAverage = useMemo(
+  () => calculateAverage(entries.map(e => e.mood_score)),
+  [entries]
+);
+
+const correlationMatrix = useMemo(
+  () => calculateCorrelationMatrix(entries, activities),
+  [entries, activities]
+);
+```
+
+2. **Lazy loading компонентов**
+```typescript
+const MoodTrendsChart = lazy(() => import('./MoodTrendsChart'));
+const ActivityBreakdown = lazy(() => import('./ActivityBreakdown'));
+
+<Suspense fallback={<Skeleton className="h-64" />}>
+  <MoodTrendsChart entries={data.trackerEntries} period={period} />
+</Suspense>
+```
+
+3. **Оптимизация запросов**
+```sql
+-- Один запрос вместо двух (JOIN)
+SELECT 
+  te.*,
+  json_agg(tem.*) as tracker_emotions
+FROM tracker_entries te
+LEFT JOIN tracker_emotions tem ON tem.tracker_entry_id = te.id
+WHERE te.user_id = $1 AND te.entry_date >= $2
+GROUP BY te.id;
+```
+
+4. **Индексы для аналитики**
+```sql
+-- Composite index для диапазонов дат
+CREATE INDEX idx_tracker_analytics 
+  ON tracker_entries(user_id, entry_date DESC, entry_time DESC)
+  INCLUDE (mood_score, stress_level, anxiety_level, energy_level);
+
+-- Index для агрегаций
+CREATE INDEX idx_activities_analytics 
+  ON activities(user_id, date DESC)
+  INCLUDE (status, category, impact_type, duration_minutes);
+```
+
 ## 📦 Установка и запуск
 
 ### Требования
