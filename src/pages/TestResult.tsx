@@ -38,7 +38,7 @@ const TestResult = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, formatDate } = useLocale();
   const [result, setResult] = useState<TestResult | null>(null);
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +162,7 @@ const TestResult = () => {
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-foreground">{getLocalizedField(test, 'name')}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {t('tests.completedOn')} {new Date(result.completed_at).toLocaleDateString('en-US', {
+              {t('tests.completedOn')} {formatDate(result.completed_at, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

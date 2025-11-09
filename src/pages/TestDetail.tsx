@@ -122,11 +122,11 @@ const TestDetail = () => {
           <div className="flex flex-wrap gap-3">
             <Badge variant="outline" className="gap-2">
               <Clock className="h-4 w-4" />
-              {test.duration_minutes} minutes
+              {test.duration_minutes} {t('common.minutes')}
             </Badge>
             <Badge variant="outline" className="gap-2">
               <FileText className="h-4 w-4" />
-              {test.total_questions} questions
+              {test.total_questions} {t('tests.questions').toLowerCase()}
             </Badge>
           </div>
         </Card>

@@ -4,9 +4,20 @@ export const useLocale = () => {
   const { i18n } = useTranslation();
 
   const getLocalizedField = (obj: any, fieldName: string) => {
-    const lang = i18n.language;
-    // Try language-specific field first, then fall back to English
-    return obj[`${fieldName}_${lang}`] || obj[`${fieldName}_en`] || obj[fieldName];
+    if (!obj) return '' as any;
+    const raw = (i18n.language || 'en').toLowerCase();
+    const base = raw.split('-')[0];
+    const candidates = [
+      `${fieldName}_${raw}`,
+      `${fieldName}_${base}`,
+      `${fieldName}_en`,
+      fieldName,
+    ];
+    for (const key of candidates) {
+      const val = obj?.[key as keyof typeof obj];
+      if (val !== undefined && val !== null && val !== '') return val as any;
+    }
+    return '' as any;
   };
 
   const formatDate = (date: Date | string, options?: Intl.DateTimeFormatOptions) => {

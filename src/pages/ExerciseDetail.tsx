@@ -161,7 +161,7 @@ const ExerciseDetail = () => {
             ✨ {t('exerciseDetail.whatThisHelps')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {(getLocalizedField(exercise, 'effects') as string[]).map((effect, i) => (
+            {(Array.isArray(getLocalizedField(exercise, 'effects')) ? (getLocalizedField(exercise, 'effects') as string[]) : exercise.effects).map((effect, i) => (
               <Badge key={i} variant="secondary">
                 {effect}
               </Badge>

@@ -31,7 +31,7 @@ const Tests = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { getLocalizedField } = useLocale();
+  const { getLocalizedField, formatDate } = useLocale();
 
   useEffect(() => {
     loadTests();
@@ -148,10 +148,10 @@ const Tests = () => {
                     {lastResult && (
                       <div className="pt-3 border-t border-border">
                         <p className="text-xs text-muted-foreground mb-2">
-                          Last taken: {new Date(lastResult.completed_at).toLocaleDateString()}
+                          {t('tests.completedOn')} {formatDate(lastResult.completed_at, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </p>
                         <Badge className={getCategoryColor(lastResult.category)}>
-                          Score: {lastResult.score}
+                          {t('tests.results')}: {lastResult.score}
                         </Badge>
                       </div>
                     )}

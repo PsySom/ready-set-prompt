@@ -442,7 +442,8 @@
       "step2": "Track your daily activities and their impact on your wellbeing",
       "step3": "Retake this test periodically to monitor your progress"
     },
-    "noTests": "No tests available"
+    "noTests": "No tests available",
+    "lastTaken": "Last taken"
   },
   "exercises": {
     "title": "Exercises & Practices",
