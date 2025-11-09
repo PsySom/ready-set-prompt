@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { format } from 'date-fns';
 import { ActivityDetailModal } from './ActivityDetailModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Play } from 'lucide-react';
 
 interface ActivityItemProps {
   activity: any;
@@ -36,6 +39,8 @@ const IMPACT_COLORS: Record<string, string> = {
 };
 
 export const ActivityItem = ({ activity, onUpdate }: ActivityItemProps) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -135,6 +140,20 @@ export const ActivityItem = ({ activity, onUpdate }: ActivityItemProps) => {
                     {activity.description}
                   </p>
                 </CollapsibleContent>
+              )}
+
+              {activity.exercise_id && activity.exercises?.slug && (
+                <Button
+                  size="sm"
+                  className="mt-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/exercises/${activity.exercises.slug}/session`);
+                  }}
+                >
+                  <Play className="h-3 w-3 mr-1" />
+                  {t('exercises.start')}
+                </Button>
               )}
             </div>
 

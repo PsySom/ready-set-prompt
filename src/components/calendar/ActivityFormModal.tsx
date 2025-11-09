@@ -21,6 +21,7 @@ interface ActivityFormModalProps {
   onOpenChange: (open: boolean) => void;
   defaultDate?: Date;
   activity?: any;
+  exerciseId?: string;
 }
 
 const activitySchema = z.object({
@@ -57,7 +58,7 @@ const IMPACT_TYPES = [
   { value: 'mixed', label: 'Mixed', color: 'bg-blue-500' }
 ];
 
-export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }: ActivityFormModalProps) => {
+export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity, exerciseId }: ActivityFormModalProps) => {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -135,7 +136,8 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
       recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
       reminder_enabled: formData.reminder_enabled,
       reminder_minutes_before: formData.reminder_enabled ? formData.reminder_minutes_before : null,
-      status: 'planned' as const
+      status: 'planned' as const,
+      exercise_id: exerciseId || null
     };
 
     const { error } = activity

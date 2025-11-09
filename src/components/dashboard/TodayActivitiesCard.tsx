@@ -16,6 +16,10 @@ interface Activity {
   start_time: string | null;
   status: string;
   impact_type: string;
+  exercise_id: string | null;
+  exercises?: {
+    slug: string;
+  };
 }
 
 const TodayActivitiesCard = () => {
@@ -40,7 +44,7 @@ const TodayActivitiesCard = () => {
       
       const { data, error } = await supabase
         .from('activities')
-        .select('id, title, start_time, status, impact_type')
+        .select('id, title, start_time, status, impact_type, exercise_id, exercises(slug)')
         .eq('user_id', user.id)
         .eq('date', today)
         .order('start_time', { ascending: true });
@@ -171,6 +175,19 @@ const TodayActivitiesCard = () => {
                   {activity.start_time ? activity.start_time.slice(0, 5) : t('dashboard.todayActivitiesCard.noTime')}
                 </p>
               </div>
+              {activity.exercise_id && activity.exercises?.slug && (
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/exercises/${activity.exercises.slug}/session`);
+                  }}
+                  className="shrink-0"
+                >
+                  {t('exercises.start')}
+                </Button>
+              )}
             </div>
           ))}
         </div>

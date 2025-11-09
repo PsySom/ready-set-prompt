@@ -50,7 +50,7 @@ export const CalendarView = ({ currentDate, onDateChange }: CalendarViewProps) =
 
     const { data } = await supabase
       .from('activities')
-      .select('*')
+      .select('*, exercises(slug)')
       .eq('user_id', user.id)
       .gte('date', format(calendarStart, 'yyyy-MM-dd'))
       .lte('date', format(calendarEnd, 'yyyy-MM-dd'));

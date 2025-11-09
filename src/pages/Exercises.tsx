@@ -50,7 +50,7 @@ const Exercises = () => {
       duration_minutes: selectedExercise.duration_minutes,
       impact_type: 'restorative',
       category: 'practice',
-      description: '',
+      description: getLocalizedField(selectedExercise, 'description') || '',
       date: new Date(),
       anytime: true,
       start_time: '09:00',
@@ -211,6 +211,7 @@ const Exercises = () => {
         open={activityModalOpen}
         onOpenChange={setActivityModalOpen}
         activity={getPrefilledActivity()}
+        exerciseId={selectedExercise?.id}
       />
     </AppLayout>
   );

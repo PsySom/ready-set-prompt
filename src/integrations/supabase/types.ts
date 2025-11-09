@@ -22,6 +22,7 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           end_time: string | null
+          exercise_id: string | null
           id: string
           impact_type: Database["public"]["Enums"]["activity_impact"]
           is_recurring: boolean | null
@@ -31,6 +32,7 @@ export type Database = {
           start_time: string | null
           status: Database["public"]["Enums"]["activity_status"] | null
           template_id: string | null
+          test_id: string | null
           title: string
           updated_at: string | null
           user_id: string
@@ -42,6 +44,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           end_time?: string | null
+          exercise_id?: string | null
           id?: string
           impact_type: Database["public"]["Enums"]["activity_impact"]
           is_recurring?: boolean | null
@@ -51,6 +54,7 @@ export type Database = {
           start_time?: string | null
           status?: Database["public"]["Enums"]["activity_status"] | null
           template_id?: string | null
+          test_id?: string | null
           title: string
           updated_at?: string | null
           user_id: string
@@ -62,6 +66,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           end_time?: string | null
+          exercise_id?: string | null
           id?: string
           impact_type?: Database["public"]["Enums"]["activity_impact"]
           is_recurring?: boolean | null
@@ -71,11 +76,27 @@ export type Database = {
           start_time?: string | null
           status?: Database["public"]["Enums"]["activity_status"] | null
           template_id?: string | null
+          test_id?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activities_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       activity_templates: {
         Row: {
