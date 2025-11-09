@@ -198,16 +198,15 @@ export const ActivityFormModal = ({ open, onOpenChange, defaultDate, activity }:
               >
                 <SelectTrigger className="h-10 md:h-11 text-sm md:text-base">
                   <SelectValue>
-                    {CATEGORIES.find(c => c.value === formData.category)?.emoji} {t(`calendar.categories.${formData.category}`)}
+                    <span>
+                      {CATEGORIES.find(c => c.value === formData.category)?.emoji} {t(`calendar.categories.${formData.category}`)}
+                    </span>
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map(cat => (
                     <SelectItem key={cat.value} value={cat.value} className="text-sm md:text-base">
-                      <span className="flex items-center gap-2">
-                        <span>{cat.emoji}</span>
-                        <span>{t(`calendar.categories.${cat.value}`)}</span>
-                      </span>
+                      {cat.emoji} {t(`calendar.categories.${cat.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
