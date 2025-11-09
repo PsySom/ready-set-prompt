@@ -3554,6 +3554,1363 @@ CREATE INDEX idx_activities_analytics
   INCLUDE (status, category, impact_type, duration_minutes);
 ```
 
+## 📝 Система журналирования (Journal)
+
+### Обзор функциональности
+
+Система журналирования - это интерактивный чат-интерфейс для ведения личного дневника и рефлексии. Пользователи могут вести свободные записи или использовать структурированные сценарии для утренних и вечерних размышлений. Система автоматически собирает статистику, анализирует привычки и предоставляет инсайты.
+
+**Ключевые возможности:**
+- 💬 Свободное журналирование в формате чата
+- 🌅 Структурированные утренние рефлексии
+- 🌙 Структурированные вечерние рефлексии
+- 📊 Автоматическая статистика и инсайты
+- 🔍 Поиск и фильтрация записей
+- 📤 Экспорт данных (TXT, JSON)
+- 🔄 Продолжение предыдущих разговоров
+
+### 🗄️ Структура данных
+
+#### Таблица: journal_sessions
+
+Хранит информацию о сессиях журналирования.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.journal_sessions (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  session_type TEXT NOT NULL, -- 'free', 'morning', 'evening'
+  started_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  ended_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Index для быстрого доступа
+CREATE INDEX idx_journal_sessions_user 
+  ON journal_sessions(user_id, started_at DESC);
+
+-- RLS политики
+ALTER TABLE journal_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own sessions"
+  ON journal_sessions
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор сессии
+- `user_id` - ID пользователя (связь с auth.users)
+- `session_type` - тип сессии:
+  - `'free'` - свободное журналирование без структуры
+  - `'morning'` - утренняя рефлексия с заданными вопросами
+  - `'evening'` - вечерняя рефлексия с заданными вопросами
+- `started_at` - время начала сессии
+- `ended_at` - время окончания сессии (опционально)
+- `created_at` - время создания записи
+
+#### Таблица: journal_messages
+
+Хранит все сообщения в рамках сессий журналирования.
+
+**Схема таблицы:**
+```sql
+CREATE TABLE public.journal_messages (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  session_id UUID NOT NULL REFERENCES journal_sessions(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  message_type TEXT NOT NULL, -- 'user', 'app'
+  content TEXT NOT NULL,
+  metadata JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+-- Index для быстрого получения сообщений сессии
+CREATE INDEX idx_journal_messages_session 
+  ON journal_messages(session_id, created_at ASC);
+
+-- Index для полнотекстового поиска
+CREATE INDEX idx_journal_messages_content 
+  ON journal_messages USING gin(to_tsvector('english', content));
+
+-- RLS политики
+ALTER TABLE journal_messages ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage own messages"
+  ON journal_messages
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Поля:**
+- `id` - уникальный идентификатор сообщения
+- `session_id` - ID сессии (FK к journal_sessions)
+- `user_id` - ID пользователя
+- `message_type` - тип сообщения:
+  - `'user'` - сообщение от пользователя
+  - `'app'` - сообщение от приложения (вопросы, подтверждения)
+- `content` - текстовое содержание сообщения (до 2000 символов)
+- `metadata` - дополнительные данные в формате JSONB (для будущих расширений)
+- `created_at` - время создания сообщения
+
+**Каскадное удаление:**
+При удалении сессии (`journal_sessions`) автоматически удаляются все связанные сообщения благодаря `ON DELETE CASCADE`.
+
+### 📱 Типы журнальных сессий
+
+#### 1. Free (Свободное журналирование)
+
+**Характеристики:**
+- Без структуры и предопределенных вопросов
+- Пользователь пишет о чем угодно
+- Приложение отвечает благодарностью и поддержкой
+- Используется как дефолтный режим
+
+**Сценарий:**
+```typescript
+// src/pages/Journal.tsx - initializeSession()
+const greeting = {
+  session_id: session.id,
+  user_id: user.id,
+  message_type: 'app',
+  content: t('journal.greetings.initial') // "Привет! Расскажи, что у тебя на уме?"
+};
+```
+
+**Логика ответов:**
+```typescript
+// Free mode response
+const appMessage = {
+  session_id: sessionId,
+  user_id: user.id,
+  message_type: 'app',
+  content: t('journal.greetings.thanks') // "Спасибо за то, что поделился!"
+};
+```
+
+#### 2. Morning (Утренняя рефлексия)
+
+**Характеристики:**
+- Структурированная последовательность из 5 вопросов
+- Фокус на планировании дня и намерениях
+- Помогает настроиться на позитивный день
+
+**Последовательность вопросов:**
+```typescript
+// src/pages/Journal.tsx - getScenarioQuestions('morning')
+[
+  "Доброе утро! Как ты себя чувствуешь сегодня?",
+  "Что у тебя запланировано на сегодня?",
+  "Какое намерение ты хочешь установить на день?",
+  "Как бы ты хотел себя чувствовать в конце дня?",
+  "Отличное начало! Хорошего дня! 🌅"
+]
+```
+
+**Запуск сценария:**
+```typescript
+// Пользователь нажимает кнопку "🌅 Утро"
+startScenario('morning');
+// Устанавливается currentScenario = 'morning', scenarioStep = 0
+// Отправляется первый вопрос
+```
+
+#### 3. Evening (Вечерняя рефлексия)
+
+**Характеристики:**
+- Структурированная последовательность из 6 вопросов
+- Фокус на рефлексии прошедшего дня
+- Помогает оценить день и выразить благодарность
+
+**Последовательность вопросов:**
+```typescript
+// src/pages/Journal.tsx - getScenarioQuestions('evening')
+[
+  "Добрый вечер! Как прошел твой день?",
+  "Что сегодня прошло хорошо?",
+  "За что ты благодарен сегодня?",
+  "Что бы ты хотел улучшить завтра?",
+  "Как ты себя сейчас чувствуешь?",
+  "Спасибо за рефлексию! Хорошего вечера! 🌙"
+]
+```
+
+### 🎨 Компоненты интерфейса
+
+#### 1. Journal.tsx (Основная страница журнала)
+
+**Расположение:** `src/pages/Journal.tsx`
+
+**Структура компонента:**
+
+```typescript
+interface Message {
+  id: string;
+  message_type: 'user' | 'app';
+  content: string;
+  created_at: string;
+}
+
+type SessionType = 'morning' | 'evening' | 'free';
+
+const Journal = () => {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState('');
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentScenario, setCurrentScenario] = useState<SessionType | null>(null);
+  const [scenarioStep, setScenarioStep] = useState(0);
+  
+  // ... логика
+};
+```
+
+**Основные функции:**
+
+1. **initializeSession()** - Инициализация новой сессии
+```typescript
+const initializeSession = async () => {
+  // 1. Получить текущего пользователя
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  // 2. Создать новую сессию типа 'free'
+  const { data: session } = await supabase
+    .from('journal_sessions')
+    .insert({ user_id: user.id, session_type: 'free' })
+    .select()
+    .single();
+  
+  setSessionId(session.id);
+  
+  // 3. Отправить приветственное сообщение
+  const greeting = {
+    session_id: session.id,
+    user_id: user.id,
+    message_type: 'app',
+    content: t('journal.greetings.initial')
+  };
+  
+  await supabase.from('journal_messages').insert(greeting).select().single();
+};
+```
+
+2. **sendMessage()** - Отправка сообщения пользователя
+```typescript
+const sendMessage = async (content: string) => {
+  // 1. Валидация
+  if (!content.trim() || !sessionId || isLoading) return;
+  
+  // 2. Сохранить сообщение пользователя
+  const userMessage = {
+    session_id: sessionId,
+    user_id: user.id,
+    message_type: 'user',
+    content: content.trim()
+  };
+  
+  await supabase.from('journal_messages').insert(userMessage).select();
+  
+  // 3. Обработать ответ
+  if (currentScenario) {
+    await handleScenarioResponse(content); // Следующий вопрос сценария
+  } else {
+    // Free mode - простой ответ благодарности
+    const appMessage = {
+      session_id: sessionId,
+      user_id: user.id,
+      message_type: 'app',
+      content: t('journal.greetings.thanks')
+    };
+    await supabase.from('journal_messages').insert(appMessage);
+  }
+};
+```
+
+3. **handleScenarioResponse()** - Обработка сценарных вопросов
+```typescript
+const handleScenarioResponse = async (content: string) => {
+  const questions = getScenarioQuestions(currentScenario);
+  const nextStep = scenarioStep + 1;
+  
+  // Если есть еще вопросы
+  if (nextStep < questions.length) {
+    const appMessage = {
+      session_id: sessionId,
+      user_id: user.id,
+      message_type: 'app',
+      content: questions[nextStep]
+    };
+    
+    await supabase.from('journal_messages').insert(appMessage);
+    setScenarioStep(nextStep);
+    
+    // Завершить сценарий после последнего вопроса
+    if (nextStep === questions.length - 1) {
+      setCurrentScenario(null);
+      setScenarioStep(0);
+    }
+  }
+};
+```
+
+**UI элементы:**
+
+1. **Область сообщений** - скроллируемый список чата
+```typescript
+{messages.map((message) => (
+  <div className={cn(
+    'flex w-full',
+    message.message_type === 'user' ? 'justify-end' : 'justify-start'
+  )}>
+    <div className={cn(
+      'max-w-[70%] rounded-lg px-5 py-3',
+      message.message_type === 'user'
+        ? 'bg-primary text-primary-foreground'
+        : 'bg-secondary text-secondary-foreground'
+    )}>
+      <p>{message.content}</p>
+      <span className="text-sm opacity-70">
+        {new Date(message.created_at).toLocaleTimeString()}
+      </span>
+    </div>
+  </div>
+))}
+```
+
+2. **Quick Reply чипсы** - быстрые ответы
+```typescript
+const QUICK_REPLIES = [
+  { emoji: '😔', text: 'Меня что-то беспокоит...' },
+  { emoji: '😊', text: 'У меня есть хорошие новости!' },
+  { emoji: '🤔', text: 'Я размышляю о...' },
+  { emoji: '✍️', text: 'Просто хочу написать...' }
+];
+
+{messages.length === 1 && !currentScenario && (
+  <div className="flex flex-wrap gap-2">
+    {QUICK_REPLIES.map((reply) => (
+      <Button onClick={() => handleQuickReply(reply.text)}>
+        {reply.emoji} {reply.text}
+      </Button>
+    ))}
+  </div>
+)}
+```
+
+3. **Кнопки сценариев** - запуск утренней/вечерней рефлексии
+```typescript
+<Button onClick={() => startScenario('morning')}>
+  🌅 Утро
+</Button>
+<Button onClick={() => startScenario('evening')}>
+  🌙 Вечер
+</Button>
+```
+
+4. **Поле ввода** - Textarea с ограничением 2000 символов
+```typescript
+<Textarea
+  value={inputText}
+  onChange={(e) => setInputText(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(inputText);
+    }
+  }}
+  placeholder="Напиши, что у тебя на уме..."
+  maxLength={2000}
+/>
+<p className="text-xs text-muted-foreground">
+  {inputText.length}/2000 символов
+</p>
+```
+
+#### 2. JournalHistory.tsx (История записей)
+
+**Расположение:** `src/pages/JournalHistory.tsx`
+
+**Функциональность:**
+- Отображение всех прошлых сессий журналирования
+- Поиск по содержанию
+- Фильтрация по типу сессии и дате
+- Просмотр детальных сообщений
+- Экспорт данных (TXT, JSON)
+- Удаление сессий
+
+**Структура данных:**
+```typescript
+interface Session {
+  id: string;
+  session_type: string;
+  started_at: string;
+  message_count: number;
+  preview: string; // Превью первого сообщения пользователя
+}
+
+interface Message {
+  id: string;
+  message_type: 'user' | 'app';
+  content: string;
+  created_at: string;
+}
+```
+
+**Основные функции:**
+
+1. **loadSessions()** - Загрузка всех сессий с превью
+```typescript
+const loadSessions = async () => {
+  // 1. Получить все сессии пользователя
+  const { data: sessionsData } = await supabase
+    .from('journal_sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  // 2. Для каждой сессии получить количество сообщений и превью
+  const sessionsWithDetails = await Promise.all(
+    sessionsData.map(async (session) => {
+      const { data: messages } = await supabase
+        .from('journal_messages')
+        .select('*')
+        .eq('session_id', session.id)
+        .order('created_at', { ascending: true });
+      
+      const messageCount = messages?.length || 0;
+      const preview = messages?.find(m => m.message_type === 'user')?.content 
+        || messages[0].content;
+      
+      return {
+        id: session.id,
+        session_type: session.session_type,
+        started_at: session.started_at,
+        message_count: messageCount,
+        preview: preview.slice(0, 100) + '...'
+      };
+    })
+  );
+  
+  setSessions(sessionsWithDetails);
+};
+```
+
+2. **applyFilters()** - Фильтрация сессий
+```typescript
+const applyFilters = () => {
+  let filtered = [...sessions];
+  
+  // Фильтр по типу сессии
+  if (filterType !== 'all') {
+    filtered = filtered.filter(s => s.session_type === filterType);
+  }
+  
+  // Фильтр по дате
+  if (dateRange === 'today') {
+    filtered = filtered.filter(s => 
+      new Date(s.started_at) >= today
+    );
+  } else if (dateRange === 'week') {
+    filtered = filtered.filter(s => 
+      new Date(s.started_at) >= weekAgo
+    );
+  } else if (dateRange === 'month') {
+    filtered = filtered.filter(s => 
+      new Date(s.started_at) >= monthAgo
+    );
+  }
+  
+  // Поиск по содержанию
+  if (searchQuery.trim()) {
+    filtered = filtered.filter(s =>
+      s.preview.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+  
+  setFilteredSessions(filtered);
+};
+```
+
+3. **exportAsText()** - Экспорт в текстовый файл
+```typescript
+const exportAsText = async () => {
+  // Получить все сессии с полными сообщениями
+  const exportData = await Promise.all(
+    sessions.map(async (session) => {
+      const { data: messages } = await supabase
+        .from('journal_messages')
+        .select('*')
+        .eq('session_id', session.id)
+        .order('created_at', { ascending: true });
+      
+      return { session, messages };
+    })
+  );
+  
+  // Форматировать в текст
+  let text = `JOURNAL EXPORT\nGenerated: ${new Date().toLocaleDateString()}\n`;
+  text += '═'.repeat(50) + '\n\n';
+  
+  exportData.forEach(({ session, messages }) => {
+    text += `${new Date(session.started_at).toLocaleDateString()} - `;
+    text += `${getSessionLabel(session.session_type)} Reflection\n`;
+    text += '─'.repeat(50) + '\n\n';
+    
+    messages.forEach((msg) => {
+      const sender = msg.message_type === 'app' ? 'App' : 'You';
+      text += `${sender}: ${msg.content}\n\n`;
+    });
+    
+    text += '─'.repeat(50) + '\n\n';
+  });
+  
+  // Скачать файл
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `journal-export-${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+};
+```
+
+4. **groupSessionsByDate()** - Группировка сессий по датам
+```typescript
+const groupSessionsByDate = (sessions: Session[]) => {
+  const groups: { [key: string]: Session[] } = {};
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  
+  sessions.forEach((session) => {
+    const date = new Date(session.started_at);
+    const sessionDate = date.toDateString();
+    
+    let dateKey: string;
+    if (sessionDate === today) {
+      dateKey = 'Today';
+    } else if (sessionDate === yesterday) {
+      dateKey = 'Yesterday';
+    } else {
+      dateKey = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    
+    if (!groups[dateKey]) groups[dateKey] = [];
+    groups[dateKey].push(session);
+  });
+  
+  return groups;
+};
+```
+
+**UI элементы:**
+
+1. **Поиск**
+```typescript
+<Input
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  placeholder="Search sessions..."
+  className="pl-10"
+/>
+```
+
+2. **Группированный список сессий**
+```typescript
+{Object.entries(groupedSessions).map(([date, dateSessions]) => (
+  <Collapsible key={date} defaultOpen>
+    <CollapsibleTrigger>
+      <h3>{date}</h3>
+      <Badge>{dateSessions.length} sessions</Badge>
+    </CollapsibleTrigger>
+    <CollapsibleContent>
+      {dateSessions.map((session) => (
+        <Card onClick={() => loadSessionMessages(session.id)}>
+          <span>{getSessionIcon(session.session_type)}</span>
+          <Badge>{getSessionLabel(session.session_type)}</Badge>
+          <p>{session.preview}</p>
+          <Badge>{session.message_count} msgs</Badge>
+        </Card>
+      ))}
+    </CollapsibleContent>
+  </Collapsible>
+))}
+```
+
+3. **Модальное окно детального просмотра**
+```typescript
+<Dialog open={!!selectedSession}>
+  <DialogContent>
+    <div className="overflow-y-auto space-y-4">
+      {sessionMessages.map((message) => (
+        <div className={
+          message.message_type === 'user' ? 'justify-end' : 'justify-start'
+        }>
+          <div className={
+            message.message_type === 'user'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          }>
+            <p>{message.content}</p>
+            <span>{new Date(message.created_at).toLocaleTimeString()}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <Button onClick={continueConversation}>Continue Conversation</Button>
+    <Button variant="destructive" onClick={() => confirmDelete('session', selectedSession)}>
+      Delete
+    </Button>
+  </DialogContent>
+</Dialog>
+```
+
+4. **Sheet с фильтрами**
+```typescript
+<Sheet open={showFilters} onOpenChange={setShowFilters}>
+  <SheetContent>
+    <RadioGroup value={filterType} onValueChange={setFilterType}>
+      <RadioGroupItem value="all">All</RadioGroupItem>
+      <RadioGroupItem value="morning">🌅 Morning</RadioGroupItem>
+      <RadioGroupItem value="evening">🌙 Evening</RadioGroupItem>
+      <RadioGroupItem value="free">💬 Free</RadioGroupItem>
+    </RadioGroup>
+    
+    <RadioGroup value={dateRange} onValueChange={setDateRange}>
+      <RadioGroupItem value="all">All Time</RadioGroupItem>
+      <RadioGroupItem value="today">Today</RadioGroupItem>
+      <RadioGroupItem value="week">Last 7 Days</RadioGroupItem>
+      <RadioGroupItem value="month">Last 30 Days</RadioGroupItem>
+    </RadioGroup>
+  </SheetContent>
+</Sheet>
+```
+
+#### 3. JournalStats.tsx (Статистические карточки)
+
+**Расположение:** `src/components/journal/JournalStats.tsx`
+
+**Интерфейс:**
+```typescript
+interface JournalStatsProps {
+  totalSessions: number;      // Всего сессий
+  currentStreak: number;       // Текущая серия дней
+  longestStreak: number;       // Лучшая серия дней
+  thisMonthCount: number;      // Сессий в этом месяце
+}
+```
+
+**Визуализация:**
+```typescript
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  {/* Всего записей */}
+  <Card className="p-4">
+    <div className="flex items-center gap-3">
+      <div className="p-2 rounded-lg bg-primary/10">
+        <BarChart3 className="h-5 w-5 text-primary" />
+      </div>
+      <div>
+        <p className="text-2xl font-bold">{totalSessions}</p>
+        <p className="text-xs text-muted-foreground">Всего записей</p>
+      </div>
+    </div>
+  </Card>
+  
+  {/* Текущая серия */}
+  <Card className="p-4">
+    <Flame className="text-orange-500" />
+    <p className="text-2xl font-bold">{currentStreak}</p>
+    <p className="text-xs">Серия дней</p>
+  </Card>
+  
+  {/* Лучшая серия */}
+  <Card className="p-4">
+    <TrendingUp className="text-green-500" />
+    <p className="text-2xl font-bold">{longestStreak}</p>
+    <p className="text-xs">Лучшая серия</p>
+  </Card>
+  
+  {/* В этом месяце */}
+  <Card className="p-4">
+    <Calendar className="text-blue-500" />
+    <p className="text-2xl font-bold">{thisMonthCount}</p>
+    <p className="text-xs">В этом месяце</p>
+  </Card>
+</div>
+```
+
+**Алгоритм расчета серий (streaks):**
+```typescript
+const calculateStats = async () => {
+  // Получить все сессии пользователя
+  const { data: allSessions } = await supabase
+    .from('journal_sessions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: true });
+  
+  // Получить уникальные даты
+  const dates = allSessions.map(s => new Date(s.started_at).toDateString());
+  const uniqueDates = [...new Set(dates)];
+  
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let tempStreak = 1;
+  
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  
+  // Рассчитать текущую серию
+  if (uniqueDates[uniqueDates.length - 1] === today || 
+      uniqueDates[uniqueDates.length - 1] === yesterday) {
+    currentStreak = 1;
+    
+    // Идти назад и считать последовательные дни
+    for (let i = uniqueDates.length - 2; i >= 0; i--) {
+      const curr = new Date(uniqueDates[i]);
+      const next = new Date(uniqueDates[i + 1]);
+      const diffDays = Math.floor((next - curr) / 86400000);
+      
+      if (diffDays === 1) {
+        currentStreak++;
+      } else {
+        break; // Прервана серия
+      }
+    }
+  }
+  
+  // Рассчитать самую длинную серию
+  for (let i = 1; i < uniqueDates.length; i++) {
+    const curr = new Date(uniqueDates[i - 1]);
+    const next = new Date(uniqueDates[i]);
+    const diffDays = Math.floor((next - curr) / 86400000);
+    
+    if (diffDays === 1) {
+      tempStreak++;
+      longestStreak = Math.max(longestStreak, tempStreak);
+    } else {
+      tempStreak = 1;
+    }
+  }
+  
+  longestStreak = Math.max(longestStreak, tempStreak, currentStreak);
+  
+  // Посчитать сессии этого месяца
+  const now = new Date();
+  const thisMonthCount = allSessions.filter(s => {
+    const sessionDate = new Date(s.started_at);
+    return sessionDate.getMonth() === now.getMonth() && 
+           sessionDate.getFullYear() === now.getFullYear();
+  }).length;
+  
+  setStats({ totalSessions: allSessions.length, currentStreak, longestStreak, thisMonthCount });
+};
+```
+
+#### 4. JournalInsights.tsx (Инсайты и аналитика)
+
+**Расположение:** `src/components/journal/JournalInsights.tsx`
+
+**Интерфейс:**
+```typescript
+interface InsightData {
+  averageSessionsPerWeek: number;     // Среднее количество сессий в неделю
+  mostActiveTimeOfDay: string;        // Самое активное время суток
+  averageMessageCount: number;        // Среднее количество сообщений
+  consistencyScore: number;           // Оценка регулярности (0-100)
+  topWords: { word: string; count: number }[]; // Топ часто упоминаемых слов
+}
+```
+
+**Визуализация:**
+
+1. **Карточка привычек журналирования**
+```typescript
+<Card className="p-4">
+  <Clock className="h-5 w-5 text-primary" />
+  <h4>Journaling Habit</h4>
+  <div>
+    <div>Best time of day: {insights.mostActiveTimeOfDay}</div>
+    <div>Sessions per week: {insights.averageSessionsPerWeek.toFixed(1)}</div>
+    <div>Avg. messages: {insights.averageMessageCount.toFixed(0)}</div>
+  </div>
+</Card>
+```
+
+2. **Карточка оценки регулярности**
+```typescript
+const getConsistencyColor = (score: number) => {
+  if (score >= 80) return 'text-green-500';
+  if (score >= 50) return 'text-yellow-500';
+  return 'text-red-500';
+};
+
+<Card className="p-4">
+  <Target className="h-5 w-5 text-primary" />
+  <h4>Consistency Score</h4>
+  <div className={`text-4xl font-bold ${getConsistencyColor(insights.consistencyScore)}`}>
+    {insights.consistencyScore}%
+  </div>
+  <p>
+    {insights.consistencyScore >= 80 ? 'Excellent!' : 
+     insights.consistencyScore >= 50 ? 'Good progress' : 
+     'Keep going!'}
+  </p>
+</Card>
+```
+
+3. **Часто упоминаемые темы**
+```typescript
+<Card className="p-4">
+  <MessageSquare className="h-5 w-5 text-primary" />
+  <h4>Frequently Mentioned Topics</h4>
+  <div className="flex flex-wrap gap-2">
+    {insights.topWords.map((item) => (
+      <Badge key={item.word} variant="secondary">
+        {item.word} ({item.count})
+      </Badge>
+    ))}
+  </div>
+</Card>
+```
+
+**Алгоритмы расчета инсайтов:**
+
+1. **Среднее количество сессий в неделю:**
+```typescript
+const totalDays = Math.max(1, Math.floor(
+  (Date.now() - new Date(allSessions[0].started_at).getTime()) / 86400000
+));
+const averageSessionsPerWeek = (allSessions.length / totalDays) * 7;
+```
+
+2. **Самое активное время суток:**
+```typescript
+const timeSlots = { morning: 0, afternoon: 0, evening: 0, night: 0 };
+
+allSessions.forEach(s => {
+  const hour = new Date(s.started_at).getHours();
+  if (hour >= 5 && hour < 12) timeSlots.morning++;
+  else if (hour >= 12 && hour < 17) timeSlots.afternoon++;
+  else if (hour >= 17 && hour < 21) timeSlots.evening++;
+  else timeSlots.night++;
+});
+
+const mostActiveTime = Object.entries(timeSlots)
+  .reduce((a, b) => a[1] > b[1] ? a : b)[0];
+
+const timeLabels = {
+  morning: 'Morning (5AM-12PM)',
+  afternoon: 'Afternoon (12PM-5PM)',
+  evening: 'Evening (5PM-9PM)',
+  night: 'Night (9PM-5AM)'
+};
+
+const mostActiveTimeOfDay = timeLabels[mostActiveTime];
+```
+
+3. **Среднее количество сообщений:**
+```typescript
+const totalMessages = allSessions.reduce(
+  (sum, s) => sum + (s.journal_messages?.length || 0), 
+  0
+);
+const averageMessageCount = totalMessages / allSessions.length;
+```
+
+4. **Оценка регулярности (consistency score):**
+```typescript
+// Ожидаем сессию каждые 2 дня
+const expectedSessions = Math.ceil(totalDays / 2);
+const consistencyScore = Math.min(100, Math.round(
+  (allSessions.length / expectedSessions) * 100
+));
+```
+
+5. **Частотный анализ слов:**
+```typescript
+const wordCounts: { [key: string]: number } = {};
+
+allSessions.forEach(s => {
+  s.journal_messages?.forEach((m: any) => {
+    if (m.message_type === 'user') {
+      // Токенизация текста
+      const words = m.content.toLowerCase()
+        .replace(/[^\w\s]/g, '') // Удалить пунктуацию
+        .split(/\s+/)
+        .filter(w => w.length > 4); // Только слова длиннее 4 символов
+      
+      words.forEach(word => {
+        wordCounts[word] = (wordCounts[word] || 0) + 1;
+      });
+    }
+  });
+});
+
+// Топ-10 слов
+const topWords = Object.entries(wordCounts)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
+  .map(([word, count]) => ({ word, count }));
+```
+
+### 🔄 Механизм работы системы
+
+#### Жизненный цикл сессии
+
+```mermaid
+graph TD
+    A[Пользователь открывает /journal] --> B[initializeSession]
+    B --> C[Создать journal_sessions запись]
+    C --> D[Создать приветственное сообщение]
+    D --> E{Выбор режима}
+    E -->|Free| F[Свободное журналирование]
+    E -->|Morning| G[Запуск утреннего сценария]
+    E -->|Evening| H[Запуск вечернего сценария]
+    F --> I[sendMessage - user input]
+    G --> J[handleScenarioResponse - следующий вопрос]
+    H --> J
+    I --> K[Сохранить в journal_messages]
+    J --> K
+    K --> L[Отобразить в UI]
+    L --> M{Продолжить?}
+    M -->|Да| I
+    M -->|Нет| N[Закрыть страницу]
+```
+
+#### Поток данных
+
+1. **Создание новой сессии:**
+```
+User → Journal.tsx → initializeSession() → Supabase
+  ↓
+  CREATE journal_sessions (user_id, session_type: 'free')
+  ↓
+  CREATE journal_messages (message_type: 'app', content: greeting)
+  ↓
+  UI: Display greeting
+```
+
+2. **Отправка сообщения пользователя:**
+```
+User → Textarea → sendMessage() → Supabase
+  ↓
+  CREATE journal_messages (message_type: 'user', content: input)
+  ↓
+  currentScenario ?
+    ├─ Yes → handleScenarioResponse() → Следующий вопрос
+    └─ No  → Free mode response → "Спасибо!"
+  ↓
+  UI: Display messages
+```
+
+3. **Просмотр истории:**
+```
+User → JournalHistory.tsx → loadSessions() → Supabase
+  ↓
+  SELECT * FROM journal_sessions WHERE user_id = $1
+  ↓
+  For each session:
+    SELECT * FROM journal_messages WHERE session_id = $1
+  ↓
+  Calculate preview, message_count
+  ↓
+  UI: Display grouped sessions
+```
+
+### 📊 Статистика и инсайты
+
+#### Метрики, отслеживаемые системой
+
+1. **Количественные метрики:**
+   - Общее количество сессий журналирования
+   - Общее количество сообщений
+   - Количество сессий в этом месяце
+   - Среднее количество сообщений на сессию
+   - Среднее количество сессий в неделю
+
+2. **Временные метрики:**
+   - Текущая серия дней (streak) - сколько дней подряд пользователь журналировал
+   - Самая длинная серия дней
+   - Самое активное время суток (утро/день/вечер/ночь)
+   - Распределение по времени дня
+
+3. **Качественные метрики:**
+   - Оценка регулярности (consistency score) - процент соблюдения ожидаемой частоты журналирования
+   - Топ-10 часто упоминаемых слов/тем
+   - Типы используемых сессий (free/morning/evening)
+
+4. **Поведенческие паттерны:**
+   - Предпочитаемый тип сессии (свободная/структурированная)
+   - Средняя длина записей (по символам)
+   - Распределение по дням недели
+
+#### Интеграция с JournalHistory
+
+На странице истории журнала отображаются:
+- **JournalStats** компонент вверху страницы - быстрый обзор ключевых метрик
+- **JournalInsights** компонент - детальные инсайты о привычках журналирования
+
+Данные обновляются при каждом обращении к странице:
+```typescript
+useEffect(() => {
+  loadSessions();
+  calculateStats();
+}, []);
+```
+
+### 📤 Экспорт данных
+
+#### Формат TEXT (.txt)
+
+**Структура экспорта:**
+```
+JOURNAL EXPORT
+Generated: December 15, 2024
+══════════════════════════════════════════════════
+
+December 15, 2024 - Morning Reflection
+──────────────────────────────────────────────────
+
+App: Доброе утро! Как ты себя чувствуешь сегодня?
+
+You: Чувствую себя отлично, готов к новому дню!
+
+App: Что у тебя запланировано на сегодня?
+
+You: Планирую закончить проект и сходить на тренировку.
+
+──────────────────────────────────────────────────
+
+December 15, 2024 - Evening Reflection
+──────────────────────────────────────────────────
+
+App: Добрый вечер! Как прошел твой день?
+
+You: День прошел продуктивно, удалось многое сделать.
+
+──────────────────────────────────────────────────
+```
+
+**Применение:**
+- Легко читается человеком
+- Подходит для печати
+- Можно открыть в любом текстовом редакторе
+- Хорош для личного архива
+
+#### Формат JSON (.json)
+
+**Структура экспорта:**
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "session_type": "morning",
+    "started_at": "2024-12-15T08:30:00.000Z",
+    "message_count": 8,
+    "preview": "Чувствую себя отлично, готов к новому дню!..."
+  },
+  {
+    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+    "session_type": "evening",
+    "started_at": "2024-12-15T21:00:00.000Z",
+    "message_count": 10,
+    "preview": "День прошел продуктивно, удалось многое сделать..."
+  }
+]
+```
+
+**Применение:**
+- Программная обработка данных
+- Резервное копирование с метаданными
+- Миграция данных между системами
+- Аналитика через внешние инструменты
+
+**Функция экспорта:**
+```typescript
+const exportAsJSON = () => {
+  const data = JSON.stringify(sessions, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `journal-export-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+### 🎨 Дизайн и UX
+
+#### Цветовая схема для типов сессий
+
+```typescript
+const SESSION_COLORS = {
+  free: {
+    icon: '✍️',
+    badge: 'secondary',
+    description: 'Free Writing'
+  },
+  morning: {
+    icon: '🌅',
+    badge: 'default',
+    gradient: 'from-orange-400 to-yellow-300',
+    description: 'Morning Reflection'
+  },
+  evening: {
+    icon: '🌙',
+    badge: 'default',
+    gradient: 'from-blue-600 to-indigo-500',
+    description: 'Evening Reflection'
+  }
+};
+```
+
+#### Адаптивность
+
+**Desktop (>768px):**
+- Широкие поля ввода
+- Двухколоночная раскладка статистики (4 карточки в ряд)
+- Большие отступы между элементами
+
+**Tablet (640-768px):**
+- Средние поля ввода
+- Двухколоночная раскладка статистики (2 карточки в ряд)
+
+**Mobile (<640px):**
+- Компактные поля ввода
+- Одноколоночная раскладка статистики
+- Оптимизированные touch-таргеты (минимум 44x44px)
+
+```typescript
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+  {/* Автоматически адаптируется */}
+</div>
+
+<Textarea className="min-h-[60px] max-h-[120px]">
+  {/* Ограничение высоты для удобства */}
+</Textarea>
+```
+
+#### Анимации
+
+1. **Появление сообщений:**
+```css
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+```
+
+2. **Автоскролл к последнему сообщению:**
+```typescript
+useEffect(() => {
+  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+}, [messages]);
+```
+
+3. **Hover эффекты на карточках сессий:**
+```typescript
+<Card className="cursor-pointer hover:bg-accent/50 smooth-transition">
+```
+
+#### Accessibility
+
+- **Keyboard navigation:** Enter для отправки, Shift+Enter для новой строки
+- **Screen reader support:** Семантические HTML теги и ARIA labels
+- **Touch-friendly:** Большие кнопки на мобильных устройствах
+- **Tooltips:** Информация о функционале для новых пользователей
+
+### 🔒 Безопасность и приватность
+
+#### Row Level Security (RLS)
+
+**Политики для journal_sessions:**
+```sql
+-- Пользователи видят только свои сессии
+CREATE POLICY "Users can manage own sessions"
+  ON journal_sessions
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+**Политики для journal_messages:**
+```sql
+-- Пользователи видят только свои сообщения
+CREATE POLICY "Users can manage own messages"
+  ON journal_messages
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
+
+#### Валидация данных
+
+1. **На уровне клиента:**
+```typescript
+// Ограничение длины текста
+<Textarea maxLength={2000} />
+
+// Валидация перед отправкой
+if (!content.trim() || !sessionId || isLoading) return;
+```
+
+2. **На уровне базы данных:**
+```sql
+-- Ограничения в схеме таблицы
+content TEXT NOT NULL CHECK (length(content) > 0 AND length(content) <= 2000)
+```
+
+#### Каскадное удаление
+
+При удалении сессии автоматически удаляются все связанные сообщения:
+```sql
+session_id UUID NOT NULL 
+  REFERENCES journal_sessions(id) 
+  ON DELETE CASCADE
+```
+
+Это предотвращает "висячие" записи и экономит место в БД.
+
+#### Шифрование
+
+- Данные хранятся в Supabase с шифрованием на уровне базы данных
+- Передача данных по HTTPS
+- JWT токены для аутентификации запросов
+
+### 🚀 Оптимизация производительности
+
+#### 1. Ленивая загрузка сессий
+
+Вместо загрузки всех сообщений сразу, загружаются только превью:
+```typescript
+const loadSessions = async () => {
+  // Сначала загружаем метаданные сессий
+  const { data: sessionsData } = await supabase
+    .from('journal_sessions')
+    .select('id, session_type, started_at')
+    .eq('user_id', user.id);
+  
+  // Затем для каждой сессии получаем краткую информацию
+  const sessionsWithDetails = await Promise.all(
+    sessionsData.map(async (session) => {
+      // Только количество и первое сообщение
+      const { data: messages, count } = await supabase
+        .from('journal_messages')
+        .select('content', { count: 'exact' })
+        .eq('session_id', session.id)
+        .limit(1);
+      
+      return { ...session, message_count: count, preview: messages[0].content };
+    })
+  );
+};
+```
+
+#### 2. Кэширование с React Query (будущее улучшение)
+
+```typescript
+// Пример использования TanStack Query для кэширования
+const { data: sessions } = useQuery({
+  queryKey: ['journal-sessions', user.id],
+  queryFn: loadSessions,
+  staleTime: 1000 * 60 * 5, // 5 минут
+  cacheTime: 1000 * 60 * 30, // 30 минут
+});
+```
+
+#### 3. Индексы базы данных
+
+```sql
+-- Быстрый доступ к сессиям пользователя
+CREATE INDEX idx_journal_sessions_user 
+  ON journal_sessions(user_id, started_at DESC);
+
+-- Быстрое получение сообщений сессии
+CREATE INDEX idx_journal_messages_session 
+  ON journal_messages(session_id, created_at ASC);
+
+-- Полнотекстовый поиск
+CREATE INDEX idx_journal_messages_content 
+  ON journal_messages 
+  USING gin(to_tsvector('english', content));
+```
+
+#### 4. Дебаунсинг поиска
+
+```typescript
+// Отложенный поиск для снижения нагрузки
+const debouncedSearch = useMemo(
+  () => debounce((query: string) => {
+    applyFilters();
+  }, 300),
+  [sessions]
+);
+
+useEffect(() => {
+  debouncedSearch(searchQuery);
+}, [searchQuery]);
+```
+
+#### 5. Виртуализация длинных списков (будущее улучшение)
+
+Для пользователей с сотнями сессий можно использовать react-virtual:
+```typescript
+import { useVirtualizer } from '@tanstack/react-virtual';
+
+const virtualizer = useVirtualizer({
+  count: filteredSessions.length,
+  getScrollElement: () => parentRef.current,
+  estimateSize: () => 120, // Высота одной карточки
+});
+```
+
+### 🔮 Будущие улучшения
+
+1. **AI-ассистент для журналирования:**
+   - Интеграция с Lovable AI для генерации рефлективных вопросов
+   - Анализ настроения (sentiment analysis) сообщений
+   - Персонализированные подсказки на основе истории
+
+2. **Голосовой ввод:**
+   - Запись голосовых заметок
+   - Speech-to-text конвертация
+   - Хранение аудио в Supabase Storage
+
+3. **Медиа вложения:**
+   - Прикрепление изображений к записям
+   - Хранение в Supabase Storage bucket 'journal-media'
+
+4. **Расширенная аналитика:**
+   - Sentiment analysis по времени
+   - Word clouds для визуализации тем
+   - Корреляция настроения с активностями
+
+5. **Напоминания:**
+   - Push-уведомления для напоминания о журналировании
+   - Интеграция с профилем пользователя (morning_reflection_time, evening_reflection_time)
+
+6. **Теги и категории:**
+   - Пользовательские теги для сессий
+   - Фильтрация по тегам
+   - Связь тегов с рекомендациями
+
+7. **Шаблоны сценариев:**
+   - Кастомные сценарии, создаваемые пользователем
+   - Библиотека готовых шаблонов (благодарность, рефлексия, планирование и т.д.)
+
+8. **Социальные функции (опционально):**
+   - Анонимное публичное журналирование
+   - Поддержка сообщества
+   - Коллективные челленджи (streak challenges)
+
 ## 📦 Установка и запуск
 
 ### Требования
