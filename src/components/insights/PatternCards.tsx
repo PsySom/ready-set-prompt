@@ -133,17 +133,17 @@ const PatternCards = ({ data }: PatternCardsProps) => {
   }
 
   return (
-    <div className="space-y-4 lg:space-y-6">
+    <div className="space-y-md lg:space-y-lg">
       <h2 className="text-xl md:text-2xl font-semibold text-foreground animate-fade-in">{t('insights.patterns.title')}</h2>
-      <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+      <div className="grid md:grid-cols-2 gap-md lg:gap-lg">
         {patterns.map((pattern, index) => (
           <Card 
             key={index} 
-            className="p-4 md:p-5 lg:p-6 animate-fade-in hover-scale transition-all duration-300 hover:shadow-lg cursor-pointer group"
+            className="p-md lg:p-lg animate-fade-in hover-scale transition-all duration-300 hover:shadow-lg cursor-pointer group"
             style={{ animationDelay: `${index * 150}ms` }}
           >
-            <div className="flex items-start gap-3 md:gap-4">
-              <div className={`p-2 md:p-3 rounded-lg ${pattern.bgColor} transition-transform duration-300 group-hover:scale-110`}>
+            <div className="flex items-start gap-sm md:gap-md">
+              <div className={`p-sm md:p-md rounded-lg ${pattern.bgColor} transition-transform duration-300 group-hover:scale-110`}>
                 <pattern.icon className={`h-5 w-5 md:h-6 md:w-6 ${pattern.color}`} />
               </div>
               <div className="flex-1">

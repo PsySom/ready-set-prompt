@@ -152,10 +152,10 @@ const Insights = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6 lg:space-y-8">
+      <div className="space-y-lg lg:space-y-xl">
         {/* Header */}
-        <div className="space-y-4 lg:space-y-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-md lg:space-y-lg">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-md">
             <div>
               <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">{t('insights.title')}</h1>
               <p className="text-muted-foreground text-sm md:text-base mt-1">{getPeriodLabel()}</p>
@@ -185,8 +185,8 @@ const Insights = () => {
 
         {/* Content */}
         {loading ? (
-          <div className="space-y-6 lg:space-y-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+          <div className="space-y-lg lg:space-y-xl">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-md lg:gap-lg">
               {[...Array(4)].map((_, i) => (
                 <Skeleton key={i} className="h-24 md:h-28 lg:h-32" />
               ))}
@@ -196,22 +196,22 @@ const Insights = () => {
             ))}
           </div>
         ) : !hasData ? (
-          <div className="flex flex-col items-center justify-center py-16 space-y-4">
-            <div className="text-6xl mb-4">📊</div>
+          <div className="flex flex-col items-center justify-center py-16 space-y-md">
+            <div className="text-6xl mb-md">📊</div>
             <h3 className="text-xl font-semibold text-foreground">{t('insights.noData')}</h3>
             <p className="text-muted-foreground text-center max-w-md">
               {t('insights.keepTracking')}
             </p>
           </div>
         ) : (
-          <div className="space-y-6 lg:space-y-8">
+          <div className="space-y-lg lg:space-y-xl">
             {/* Overview Cards */}
             <OverviewCards data={data} />
 
             {/* Mood Section */}
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-md lg:space-y-lg">
               <h2 className="text-xl md:text-2xl font-semibold text-foreground">{t('insights.mood')}</h2>
-              <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
+              <div className="grid lg:grid-cols-3 gap-md lg:gap-lg">
                 <div className="lg:col-span-2">
                   <MoodTrendsChart entries={data.trackerEntries} period={period} />
                 </div>
@@ -223,9 +223,9 @@ const Insights = () => {
 
             {/* Emotional Landscape */}
             {data.trackerEntries.some((e: any) => e.tracker_emotions?.length > 0) && (
-              <div className="space-y-4 lg:space-y-6">
+              <div className="space-y-md lg:space-y-lg">
                 <h2 className="text-xl md:text-2xl font-semibold text-foreground">{t('insights.emotionalLandscape')}</h2>
-                <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+                <div className="grid md:grid-cols-2 gap-md lg:gap-lg">
                   <TopEmotions entries={data.trackerEntries} />
                   <EmotionBalance entries={data.trackerEntries} />
                 </div>
@@ -234,16 +234,16 @@ const Insights = () => {
 
             {/* Stress & Anxiety */}
             {data.trackerEntries.some((e: any) => e.stress_level !== null || e.anxiety_level !== null) && (
-              <div className="space-y-4 lg:space-y-6">
+              <div className="space-y-md lg:space-y-lg">
                 <h2 className="text-xl md:text-2xl font-semibold text-foreground">{t('insights.stressAndAnxiety')}</h2>
                 <StressAnxietyChart entries={data.trackerEntries} period={period} />
               </div>
             )}
 
             {/* Energy & Satisfaction */}
-            <div className="space-y-4 lg:space-y-6">
+            <div className="space-y-md lg:space-y-lg">
               <h2 className="text-xl md:text-2xl font-semibold text-foreground">{t('insights.energyAndSatisfaction')}</h2>
-              <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+              <div className="grid md:grid-cols-2 gap-md lg:gap-lg">
                 <EnergyPatterns entries={data.trackerEntries} period={period} />
                 <SatisfactionCharts entries={data.trackerEntries} />
               </div>
@@ -251,9 +251,9 @@ const Insights = () => {
 
             {/* Activities */}
             {data.activities.length > 0 && (
-              <div className="space-y-4 lg:space-y-6">
+              <div className="space-y-md lg:space-y-lg">
                 <h2 className="text-xl md:text-2xl font-semibold text-foreground">{t('insights.activities')}</h2>
-                <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+                <div className="grid md:grid-cols-2 gap-md lg:gap-lg">
                   <ActivityCompletion activities={data.activities} period={period} />
                   <ActivityBreakdown activities={data.activities} />
                 </div>
@@ -261,7 +261,7 @@ const Insights = () => {
             )}
 
             {/* Patterns & Recommendations */}
-            <div className="grid lg:grid-cols-2 gap-4 lg:gap-6">
+            <div className="grid lg:grid-cols-2 gap-md lg:gap-lg">
               <PatternCards data={data} />
               <RecommendationsCard data={data} />
             </div>

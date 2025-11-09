@@ -92,15 +92,15 @@ const OverviewCards = ({ data }: OverviewCardsProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-md lg:gap-lg">
       {stats.map((stat, index) => (
         <Card 
           key={index} 
-          className="p-4 md:p-5 lg:p-6 animate-fade-in hover-scale transition-all duration-300 hover:shadow-lg cursor-pointer"
+          className="p-md lg:p-lg animate-fade-in hover-scale transition-all duration-300 hover:shadow-lg cursor-pointer"
           style={{ animationDelay: `${index * 100}ms` }}
         >
-          <div className="flex items-start justify-between mb-3 md:mb-4">
-            <div className={`p-2 md:p-2.5 lg:p-3 rounded-lg ${stat.bgColor} transition-transform duration-300 hover:scale-110`}>
+          <div className="flex items-start justify-between mb-sm md:mb-md">
+            <div className={`p-sm lg:p-md rounded-lg ${stat.bgColor} transition-transform duration-300 hover:scale-110`}>
               {typeof stat.icon === 'string' ? (
                 <span className="text-2xl md:text-3xl">{stat.icon}</span>
               ) : (

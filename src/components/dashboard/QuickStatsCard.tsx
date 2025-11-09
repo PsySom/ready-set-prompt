@@ -17,10 +17,10 @@ const QuickStatsCard = ({ entriesCount }: QuickStatsCardProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-4">
+    <div className="grid grid-cols-3 md:grid-cols-3 gap-md">
       {stats.map((stat) => (
-        <Card key={stat.label} className="p-3 md:p-4 lg:p-6 space-y-2 hover:shadow-md transition-shadow">
-          <div className={`p-2 md:p-3 rounded-lg bg-muted/50 w-fit ${stat.color}`}>
+        <Card key={stat.label} className="p-md lg:p-lg space-y-sm hover:shadow-md transition-shadow">
+          <div className={`p-sm rounded-lg bg-muted/50 w-fit ${stat.color}`}>
             <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>

@@ -32,7 +32,7 @@ const TodayActivitiesCard = () => {
   };
 
   return (
-    <Card className="p-6 space-y-4">
+    <Card className="p-lg space-y-md">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">{t('dashboard.todayActivitiesCard.title')}</h3>
         <Button size="sm" variant="ghost" onClick={() => navigate('/calendar')}>
@@ -42,18 +42,18 @@ const TodayActivitiesCard = () => {
       </div>
 
       {activities.length === 0 ? (
-        <div className="text-center py-8">
+        <div className="text-center py-xl">
           <p className="text-muted-foreground">{t('dashboard.todayActivitiesCard.noActivities')}</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/calendar')}>
+          <Button variant="outline" className="mt-md" onClick={() => navigate('/calendar')}>
             {t('dashboard.todayActivitiesCard.planYourDay')}
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-sm">
           {activities.map((activity) => (
             <div
               key={activity.id}
-              className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted smooth-transition"
+              className="flex items-center gap-sm p-sm rounded-lg bg-muted/50 hover:bg-muted smooth-transition"
             >
               <Checkbox checked={activity.completed} />
               <div

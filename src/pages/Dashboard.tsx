@@ -76,18 +76,18 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6 md:space-y-8">
+      <div className="space-y-lg md:space-y-xl">
         <DashboardHeader />
         
         {/* Main Content Grid - 2 columns on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg md:gap-xl">
           {/* Left Column - Tracker and Activities */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-lg">
             <QuickTrackerCard onEntrySaved={handleEntrySaved} />
             <TodayActivitiesCard />
             
             {/* Links to other pages */}
-            <div className="flex gap-2">
+            <div className="flex gap-sm">
               <Button 
                 variant="outline" 
                 className="flex-1"
@@ -97,7 +97,7 @@ const Dashboard = () => {
               </Button>
               <Button 
                 variant="outline" 
-                className="flex-1 gap-2"
+                className="flex-1 gap-sm"
                 onClick={() => navigate('/activity-templates')}
               >
                 <Library className="h-4 w-4" />
@@ -111,7 +111,7 @@ const Dashboard = () => {
           </div>
           
           {/* Right Column - Stats and Insights (Desktop only) */}
-          <div className="hidden lg:block space-y-6">
+          <div className="hidden lg:block space-y-lg">
             <QuickStatsCard entriesCount={todayEntries.length} />
             <InsightsPreview />
           </div>

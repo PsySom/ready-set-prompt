@@ -123,7 +123,7 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-6 flex items-center justify-between hover:bg-muted/50 smooth-transition"
+        className="w-full p-lg flex items-center justify-between hover:bg-muted/50 smooth-transition"
       >
         <div className="text-left">
           <h2 className="text-xl font-bold text-foreground">{t('trackers.title')}</h2>
@@ -143,7 +143,7 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
           isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
-        <div className="p-6 pt-0 space-y-8">
+        <div className="p-lg pt-0 space-y-xl">
           <MoodSlider 
             value={trackerData.moodScore} 
             onChange={(value) => updateTrackerData({ moodScore: value })} 
