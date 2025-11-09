@@ -123,23 +123,21 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-lg flex items-center justify-between hover:bg-muted/50 smooth-transition"
+        className="w-full p-lg flex items-center justify-between hover:bg-muted/50 medium-transition ease-out-expo"
       >
         <div className="text-left">
           <h2 className="text-xl font-bold text-foreground">{t('trackers.title')}</h2>
           <p className="text-sm text-muted-foreground">{currentTime}</p>
         </div>
-        {isExpanded ? (
-          <ChevronUp className="h-5 w-5 text-muted-foreground" />
-        ) : (
+        <div className="medium-transition spring-smooth" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
           <ChevronDown className="h-5 w-5 text-muted-foreground" />
-        )}
+        </div>
       </button>
 
       {/* Content */}
       <div
         className={cn(
-          'overflow-hidden smooth-transition',
+          'overflow-hidden slow-transition ease-out-expo',
           isExpanded ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
@@ -178,7 +176,7 @@ const QuickTrackerCard = ({ onEntrySaved }: QuickTrackerCardProps) => {
 
           <Button 
             onClick={handleSaveEntry} 
-            className="w-full" 
+            className="w-full medium-transition spring-bounce hover:scale-[1.02]" 
             size="lg"
             disabled={isSaving}
           >

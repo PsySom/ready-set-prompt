@@ -22,10 +22,10 @@ const DashboardHeader = () => {
   };
 
   return (
-    <header className="flex items-center justify-between">
+    <header className="flex items-center justify-between animate-slide-up">
       {/* Logo */}
       <div className="flex items-center gap-sm">
-        <div className="p-sm bg-primary/10 rounded-xl">
+        <div className="p-sm bg-primary/10 rounded-xl medium-transition spring-smooth hover:scale-110 hover:rotate-6">
           <Brain className="h-5 w-5 md:h-6 md:w-6 text-primary" />
         </div>
         <span className="font-semibold text-base md:text-lg lg:text-xl">{t('app.name')}</span>
@@ -38,7 +38,7 @@ const DashboardHeader = () => {
 
       {/* Profile Avatar */}
       <Avatar 
-        className="cursor-pointer hover:ring-2 hover:ring-primary smooth-transition h-9 w-9 md:h-10 md:w-10"
+        className="cursor-pointer hover:ring-2 hover:ring-primary medium-transition spring-smooth hover:scale-110 h-9 w-9 md:h-10 md:w-10"
         onClick={() => navigate('/profile')}
       >
         <AvatarImage src={user?.user_metadata?.avatar_url} />

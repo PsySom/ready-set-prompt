@@ -18,9 +18,13 @@ const QuickStatsCard = ({ entriesCount }: QuickStatsCardProps) => {
 
   return (
     <div className="grid grid-cols-3 md:grid-cols-3 gap-md">
-      {stats.map((stat) => (
-        <Card key={stat.label} className="p-md lg:p-lg space-y-sm hover:shadow-md transition-shadow">
-          <div className={`p-sm rounded-lg bg-muted/50 w-fit ${stat.color}`}>
+      {stats.map((stat, index) => (
+        <Card 
+          key={stat.label} 
+          className="p-md lg:p-lg space-y-sm hover:shadow-lg medium-transition ease-out-expo hover:scale-[1.02] animate-fade-in-scale cursor-pointer"
+          style={{ animationDelay: `calc(${index} * var(--animation-delay-sm))` }}
+        >
+          <div className={`p-sm rounded-lg bg-muted/50 w-fit medium-transition spring-smooth hover:scale-110 ${stat.color}`}>
             <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
           </div>
           <p className="text-xs md:text-sm text-muted-foreground">{stat.label}</p>

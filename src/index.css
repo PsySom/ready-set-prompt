@@ -42,8 +42,23 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
     
-    /* Custom animations */
-    --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Custom animations - Mobile */
+    --transition-smooth: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-medium: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --animation-delay-xs: 50ms;
+    --animation-delay-sm: 100ms;
+    --animation-delay-md: 150ms;
+    --animation-delay-lg: 200ms;
+    
+    --animation-duration-fast: 200ms;
+    --animation-duration-normal: 300ms;
+    --animation-duration-slow: 500ms;
+    
+    --spring-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --spring-smooth: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
 
     /* Responsive Typography */
     --text-xs: 0.75rem;
@@ -101,6 +116,20 @@ All colors MUST be HSL.
       --spacing-xl: 2.5rem;
       --spacing-2xl: 3.5rem;
       --spacing-3xl: 5rem;
+      
+      /* Tablet Animations - slightly longer */
+      --transition-smooth: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-medium: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: all 600ms cubic-bezier(0.4, 0, 0.2, 1);
+      
+      --animation-delay-xs: 75ms;
+      --animation-delay-sm: 125ms;
+      --animation-delay-md: 175ms;
+      --animation-delay-lg: 250ms;
+      
+      --animation-duration-fast: 250ms;
+      --animation-duration-normal: 350ms;
+      --animation-duration-slow: 600ms;
     }
   }
 
@@ -124,6 +153,20 @@ All colors MUST be HSL.
       --spacing-xl: 3rem;
       --spacing-2xl: 4rem;
       --spacing-3xl: 6rem;
+      
+      /* Desktop Animations - smooth and elegant */
+      --transition-smooth: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-medium: all 400ms cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: all 700ms cubic-bezier(0.4, 0, 0.2, 1);
+      
+      --animation-delay-xs: 100ms;
+      --animation-delay-sm: 150ms;
+      --animation-delay-md: 200ms;
+      --animation-delay-lg: 300ms;
+      
+      --animation-duration-fast: 300ms;
+      --animation-duration-normal: 400ms;
+      --animation-duration-slow: 700ms;
     }
   }
 
@@ -181,6 +224,26 @@ All colors MUST be HSL.
   
   .smooth-transition {
     transition: var(--transition-smooth);
+  }
+  
+  .medium-transition {
+    transition: var(--transition-medium);
+  }
+  
+  .slow-transition {
+    transition: var(--transition-slow);
+  }
+  
+  .spring-bounce {
+    transition-timing-function: var(--spring-bounce);
+  }
+  
+  .spring-smooth {
+    transition-timing-function: var(--spring-smooth);
+  }
+  
+  .ease-out-expo {
+    transition-timing-function: var(--ease-out-expo);
   }
   
   .glass-effect {

@@ -50,10 +50,11 @@ const TodayActivitiesCard = () => {
         </div>
       ) : (
         <div className="space-y-sm">
-          {activities.map((activity) => (
+          {activities.map((activity, index) => (
             <div
               key={activity.id}
-              className="flex items-center gap-sm p-sm rounded-lg bg-muted/50 hover:bg-muted smooth-transition"
+              className="flex items-center gap-sm p-sm rounded-lg bg-muted/50 hover:bg-muted medium-transition ease-out-expo hover:scale-[1.01] animate-slide-in-right cursor-pointer"
+              style={{ animationDelay: `calc(${index} * var(--animation-delay-xs))` }}
             >
               <Checkbox checked={activity.completed} />
               <div

@@ -113,6 +113,16 @@ export default {
             transform: "translateY(0)"
           }
         },
+        "fade-in-scale": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)"
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)"
+          }
+        },
         "slide-up": {
           "0%": {
             transform: "translateY(20px)",
@@ -122,13 +132,72 @@ export default {
             transform: "translateY(0)",
             opacity: "1"
           }
+        },
+        "slide-in-right": {
+          "0%": {
+            transform: "translateX(20px)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "translateX(0)",
+            opacity: "1"
+          }
+        },
+        "scale-in": {
+          "0%": {
+            transform: "scale(0.9)",
+            opacity: "0"
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1"
+          }
+        },
+        "bounce-in": {
+          "0%": {
+            transform: "scale(0.3)",
+            opacity: "0"
+          },
+          "50%": {
+            transform: "scale(1.05)"
+          },
+          "70%": {
+            transform: "scale(0.9)"
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "1"
+          }
+        },
+        "shimmer": {
+          "0%": {
+            backgroundPosition: "-200% 0"
+          },
+          "100%": {
+            backgroundPosition: "200% 0"
+          }
         }
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-up": "slide-up 0.3s ease-out",
+        "accordion-down": "accordion-down var(--animation-duration-fast) ease-out",
+        "accordion-up": "accordion-up var(--animation-duration-fast) ease-out",
+        "fade-in": "fade-in var(--animation-duration-normal) var(--ease-out-expo)",
+        "fade-in-scale": "fade-in-scale var(--animation-duration-normal) var(--ease-out-expo)",
+        "slide-up": "slide-up var(--animation-duration-normal) var(--ease-out-expo)",
+        "slide-in-right": "slide-in-right var(--animation-duration-normal) var(--ease-out-expo)",
+        "scale-in": "scale-in var(--animation-duration-fast) var(--spring-smooth)",
+        "bounce-in": "bounce-in var(--animation-duration-slow) var(--spring-bounce)",
+        "shimmer": "shimmer 2s linear infinite",
+      },
+      transitionDuration: {
+        'smooth': 'var(--transition-smooth)',
+        'medium': 'var(--transition-medium)',
+        'slow': 'var(--transition-slow)',
+      },
+      transitionTimingFunction: {
+        'spring-bounce': 'var(--spring-bounce)',
+        'spring-smooth': 'var(--spring-smooth)',
+        'ease-out-expo': 'var(--ease-out-expo)',
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

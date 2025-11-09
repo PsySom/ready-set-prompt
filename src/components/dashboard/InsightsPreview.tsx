@@ -50,13 +50,13 @@ const InsightsPreview = () => {
   const isPriority = topRecommendation.priority === 1;
 
   return (
-    <Card className={`p-lg bg-gradient-to-br ${
+    <Card className={`p-lg bg-gradient-to-br medium-transition ease-out-expo hover:shadow-lg hover:scale-[1.01] animate-fade-in-scale ${
       isPriority 
         ? 'from-destructive/5 to-warning/5 border-destructive/20' 
         : 'from-primary/5 to-secondary/5 border-primary/20'
     }`}>
       <div className="flex items-start gap-md">
-        <div className={`p-sm rounded-lg ${
+        <div className={`p-sm rounded-lg medium-transition spring-bounce hover:scale-110 ${
           isPriority ? 'bg-destructive/10' : 'bg-primary/10'
         }`}>
           {isPriority ? (
@@ -68,7 +68,7 @@ const InsightsPreview = () => {
 
         <div className="flex-1 space-y-sm">
           <div className="flex items-center gap-sm">
-            <span className="text-2xl">{topRecommendation.activity_templates.emoji}</span>
+            <span className="text-2xl medium-transition spring-smooth hover:scale-110">{topRecommendation.activity_templates.emoji}</span>
             <h3 className="font-semibold text-foreground">
               {recommendationCount} {recommendationCount === 1 ? t('dashboard.insightsPreview.recommendation') : t('dashboard.insightsPreview.recommendations')} {t('dashboard.insightsPreview.forYou')}
             </h3>
@@ -78,7 +78,7 @@ const InsightsPreview = () => {
           </p>
           
           <div className="flex gap-sm pt-sm">
-            <Button size="sm" onClick={() => navigate('/recommendations')}>
+            <Button size="sm" onClick={() => navigate('/recommendations')} className="medium-transition spring-bounce hover:scale-105">
               {t('dashboard.insightsPreview.viewRecommendations')}
             </Button>
           </div>
